@@ -1,6 +1,6 @@
 # dongxiv 建站计划（Proposal）
 
-> 状态：草案 · 最后更新：2026-11-26（仓库改为公开）
+> 状态：阶段 1 已完成（本地原型） · 最后更新：2026-11-26
 > 标记说明：✅ 已确定 · ❓ 待定（需要讨论）
 
 ---
@@ -34,7 +34,7 @@
 
 | 项目 | 决定 | 状态 |
 |---|---|---|
-| 站点名 / 编号前缀 | `dongxiv`（不用 `dongarxiv`，避开 arXiv 商标） | ❓ 待确认 |
+| 站点名 / 编号前缀 | `dongxiv`（不用 `dongarxiv`，避开 arXiv 商标） | ✅ |
 | 收录范围 | 只放自己的论文 | ✅ |
 | 文件类型 | 只公开 PDF；TeX 源码另存私人备份，**不放进本仓库** | ✅ |
 | 数据存储 | 不用数据库；每篇论文一个文件夹，放元数据文本文件和各版本 PDF | ✅ |
@@ -42,11 +42,11 @@
 | 部署 | Vercel，`git push` 后自动部署 | ✅ |
 | 发布方式 | 本地管理后台（在 localhost 的网页上操作） | ❓ 待确认 |
 | UI | 页面结构对标 arXiv；颜色、logo 和文案自己设计 | ✅ |
-| 搜索引擎 / Google Scholar 收录 | — | ❓ 待定 |
+| 搜索引擎 / Google Scholar 收录 | 暂时开启（`site.config.mjs` 的 `indexable` 一个开关） | ❓ 上线前再确认 |
 | 域名 | — | ❓ 待定 |
-| 技术栈 | 见 §10 | ❓ 待定 |
-| 主色 | — | ❓ 待定 |
-| Vibe research 字段 | 见 §5.2 | ❓ 待定 |
+| 技术栈 | Astro（见 §10） | ✅ |
+| 主色 | 深蓝 `#26456e` | ✅ |
+| Vibe research 字段 | 四类全部预留（分工、工具和模型、验证状态、材料），没填的不显示（见 §5.2） | ✅（细节可再调） |
 
 ---
 
@@ -59,7 +59,7 @@
  │   拖入 PDF / 填表 / 预览 / 点"发布"     │
  │            │ 写入文件                    │
  │            ▼                             │
- │  papers/2612.0001/meta.toml, v1.pdf …   │
+ │  papers/2612.0001/meta.yaml, v1.pdf …   │
  │            │ git commit + push           │
  └────────────┼────────────────────────────┘
               ▼
@@ -111,7 +111,7 @@
 ```
 papers/
   2612.0001/
-    meta.toml        # 元数据
+    meta.yaml        # 元数据
     v1.pdf
     v2.pdf
   2612.0002/
@@ -119,44 +119,42 @@ papers/
 site.toml            # 站点配置（名字、作者、域名、是否允许收录……）
 ```
 
-### 5.2 元数据示例（`meta.toml`）
+### 5.2 元数据示例（`meta.yaml`）
 
-```toml
-title    = "..."
-authors  = ["Dong ..."]
-abstract = """..."""          # 支持 $数学公式$
-comments = "12 pages, 3 figures"
-primary_subject = "..."
-subjects = ["..."]
-keywords = ["..."]
-license  = "CC BY 4.0"
-links    = [{ label = "Code", url = "https://..." }]
-withdrawn = ""                # 非空表示已撤稿，内容是撤稿说明
+```yaml
+title: ...
+authors: [Dong]
+abstract: |                   # 支持 $数学公式$，空行分段
+  ...
+comments: 12 pages, 3 figures # 支持 [文字](链接)
+primary_subject: ...
+subjects: [...]
+keywords: [...]
+license: CC BY 4.0            # 不写则用站点默认
+links:
+  - { label: Code, url: "https://..." }
+withdrawn: ...                # 写了就表示已撤稿，内容是撤稿说明
 
-[vibe]                        # ❓ 字段待讨论
-human_role       = "Problem, key ideas, final checking"
-agents           = ["Claude Code"]
-models           = ["Claude Opus 5.5"]
-machine_verified = "yes"      # yes / no / partial / 留空（未说明）
-human_verified   = "partial"
-formal_verified  = ""         # 例如 Lean 形式化
-materials        = [{ label = "Transcript", url = "..." }]
-notes            = ""
+vibe:                         # 每一项都可省略，省略的不显示
+  human_role: Problem, key ideas, final checking
+  agents: [Claude Code]
+  models: [Claude Opus 5.5]
+  machine_verified: "yes"     # "yes" / "no" / partial / 省略（未说明）
+  human_verified: partial
+  formal_verified: "no"       # 例如 Lean 形式化
+  materials:
+    - { label: Transcript, url: "https://..." }
+  notes: ...
 
-[[versions]]                  # 由后台自动生成，不要手改
-v      = 1
-date   = 2026-12-01T08:00:00Z
-file   = "v1.pdf"
-sha256 = "..."
-pages  = 12
-note   = ""                   # 本版本的修改说明
+versions:                     # 由后台自动生成，不要手改
+  - date: "2026-12-01T08:00:00Z"
+    file: v1.pdf
+    sha256: ...
+    pages: 12
+    note: ...                 # 本版本的修改说明
 ```
 
-**❓ Vibe research 字段需要讨论**
-
-- 每篇论文要展示哪几项？
-- "验证"具体指什么？这取决于研究领域：数学证明可以分 AI 审查、人工核对、Lean 形式化；计算或实验类可以分代码是否公开、结果能否复现。
-- 对话记录、prompt 要不要公开？
+**Vibe research 字段**：四类全部预留，没填的项不显示。验证状态是作者自己的声明，About 页说明了每个标记的含义。以后可以按研究领域再细化。
 
 ---
 
@@ -185,7 +183,7 @@ note   = ""                   # 本版本的修改说明
 
 | 沿用（学术惯例和信息结构） | 不用（arXiv 品牌元素） |
 |---|---|
-| 按日期分组的列表、条目格式 | arXiv 的红色顶栏 `#b31b1b` → 换成自己的主色 ❓ |
+| 按日期分组的列表、条目格式 | arXiv 的红色顶栏 `#b31b1b` → 换成深蓝 `#26456e` |
 | 摘要页字段的顺序、右侧边栏 | arXiv 的 logo、Cornell 和 Simons 等致谢条 |
 | `YYMM.NNNN` 编号 + `vN` 版本号 | 页面文案不照抄（例如不用 "Submitted on"，改用自己的说法） |
 | 简洁、信息密集的风格 | 字体和细节样式自己定（例如标题用衬线体） |
@@ -229,7 +227,7 @@ note   = ""                   # 本版本的修改说明
 
 ---
 
-## 10. 技术选型 ❓
+## 10. 技术选型 ✅ Astro
 
 | 部分 | 方案 A：Astro | 方案 B：Python 脚本 |
 |---|---|---|
@@ -238,7 +236,7 @@ note   = ""                   # 本版本的修改说明
 | Vercel 兼容性 | 官方支持，开箱即用 | 需要设置构建命令，可行 |
 | 适合谁 | 熟悉 JS/TS 生态 | 熟悉 Python |
 
-**我倾向方案 A**：你已经在用 Vercel，Astro 在 Vercel 上是官方支持的；页面模板写起来接近 HTML，以后调整 UI 也方便。最终取决于你更熟悉哪种语言。
+**已选方案 A（Astro 7）**：Vercel 官方支持；页面模板接近 HTML，以后调整 UI 方便。元数据用 YAML（比 TOML 更适合 JS 生态），用 zod 校验格式。
 
 ---
 
@@ -261,11 +259,11 @@ Scholar 没有申请入口，只能等爬虫来抓，一般要几周到几个月
 
 | 阶段 | 内容 | 产出 |
 |---|---|---|
-| **0. 定方案** | 讨论并定下本文档里所有 ❓ 项 | 定稿的 proposal |
-| **1. 静态网站原型** | 列表页、摘要页、版本页，用两篇示例论文在本地预览，重点打磨 UI | 本地可浏览的网站 |
+| **0. 定方案** ✅ | 定下名字、技术栈、主色、字段；域名和收录上线前再定 | 本文档 |
+| **1. 静态网站原型** ✅ | 列表页、摘要页、版本页、About、搜索、Atom、sitemap、Scholar 标签；三篇示例论文 | 本地可浏览的网站 |
 | **2. 发布后台** | 发布新论文和新版本、修改元数据、预览、一键发布 | 本地 UI |
 | **3. 上线** | 公开仓库 + Vercel + 域名；生成 sitemap、Scholar 标签、RSS | 线上网站 |
-| **4. 增强（可选）** | 搜索、OpenTimestamps、Internet Archive 自动快照、Zenodo、学科浏览页 | — |
+| **4. 增强（可选）** | OpenTimestamps、Internet Archive 自动快照、Zenodo、学科浏览页 | — |
 | **5. 以后再说** | PDF 迁到 Vercel Blob、公开 TeX、HTML 版全文 | — |
 
 ---
@@ -286,11 +284,11 @@ Scholar 没有申请入口，只能等爬虫来抓，一般要几周到几个月
 
 ## 14. 待讨论清单
 
-1. [ ] 名字定为 `dongxiv`？
+1. [x] 名字定为 `dongxiv`
 2. [ ] 域名：买什么、什么时候买？
 3. [ ] 发布方式：本地管理后台可以吗？
-4. [ ] 研究领域，以及要展示哪些 vibe research 字段（§5.2）
-5. [ ] 技术栈：Astro 还是 Python（§10）
+4. [x] vibe research 字段：四类全部预留（§5.2）
+5. [x] 技术栈：Astro（§10）
 6. [ ] 是否开放搜索引擎和 Scholar 收录（§11）
-7. [ ] 主色和整体视觉风格
+7. [x] 主色：深蓝 `#26456e`
 8. [ ] 第 4 阶段的增强功能里，哪些要做

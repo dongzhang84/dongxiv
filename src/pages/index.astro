@@ -1,0 +1,52 @@
+---
+import Base from '../layouts/Base.astro';
+import Entry from '../components/Entry.astro';
+import site from '../../site.config.mjs';
+import { getPapers, type Paper } from '../lib/papers';
+import { fmtDay, fmtMonth, dayKey, inline } from '../lib/format';
+
+const papers = getPapers();
+
+// 按首次发布日分组（papers 已按时间从新到旧排好）
+const days: { key: string; date: Date; items: { paper: Paper; n: number }[] }[] = [];
+papers.forEach((paper, i) => {
+  const key = dayKey(paper.first);
+  let g = days[days.length - 1];
+  if (!g || g.key !== key) days.push((g = { key, date: paper.first, items: [] }));
+  g.items.push({ paper, n: i + 1 });
+});
+
+// 每个月第一次出现的日期分组，用作按月跳转的锚点
+const months: { label: string; anchor: string }[] = [];
+for (const d of days) {
+  const label = fmtMonth(d.date);
+  if (!months.some((m) => m.label === label)) months.push({ label, anchor: `d${d.key}` });
+}
+---
+<Base math>
+  <h1 class="page-title">{site.name}</h1>
+  <p class="intro" set:html={inline(site.intro)} />
+  <p class="intro small">
+    Identifiers have the form <code>{site.name}:YYMM.NNNN</code>, where YYMM is the year and month of first posting
+    and NNNN the order within that month. See <a href="/about/">About</a> for versions, integrity hashes and how each paper was made.
+  </p>
+
+  {papers.length === 0 ? (
+    <p class="empty">No papers yet.</p>
+  ) : (
+    <>
+      <p class="list-index">
+        Total of {papers.length} {papers.length === 1 ? 'entry' : 'entries'}:{' '}
+        {months.map((m, i) => (<>{i > 0 && ' | '}<a href={`#${m.anchor}`}>{m.label}</a></>))}
+      </p>
+      {days.map((g) => (
+        <section class="day">
+          <h3 id={`d${g.key}`}>{fmtDay(g.date)} <span class="count">({g.items.length} {g.items.length === 1 ? 'entry' : 'entries'})</span></h3>
+          <dl class="list">
+            {g.items.map((it) => <Entry paper={it.paper} n={it.n} />)}
+          </dl>
+        </section>
+      ))}
+    </>
+  )}
+</Base>

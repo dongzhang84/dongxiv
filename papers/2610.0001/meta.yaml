@@ -1,0 +1,23 @@
+# 示例论文（demo），正式上线前删除
+title: Dimensional analysis as a first check on AI-assisted derivations
+authors: [Dong]
+abstract: |
+  Long symbolic derivations produced with AI assistance fail in characteristic ways: dropped factors of
+  $2\pi$, inconsistent sign conventions, and terms with the wrong physical dimension. We describe a lightweight
+  protocol that checks every intermediate expression for dimensional consistency and for the correct limiting
+  behaviour, and apply it to the energy flux $\dot E \propto q^2 a^2 / c^3$ of an accelerated charge.
+comments: 3 pages. Demo entry for the dongxiv prototype, not a real paper.
+primary_subject: Physics Education
+subjects: [Classical Physics]
+keywords: [dimensional analysis, AI-assisted research]
+vibe:
+  human_role: Problem choice, checking protocol, final review
+  agents: [Claude Code]
+  models: [Claude Opus 5.5]
+  machine_verified: "yes"
+  human_verified: "yes"
+versions:
+  - date: "2026-10-14T16:05:00Z"
+    file: v1.pdf
+    sha256: 3162a49806d9749cdc348b522a521a2ed3b17a4653c433724154dafd342c2903
+    pages: 3

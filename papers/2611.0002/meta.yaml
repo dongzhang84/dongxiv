@@ -1,0 +1,18 @@
+# 示例论文（demo），正式上线前删除
+title: A worked example of a reproducible vibe research workflow
+authors: [Dong]
+abstract: |
+  We document one complete vibe research project from the initial question to the posted PDF: how the problem
+  was posed to the agent, which intermediate results were accepted or rejected, and how the final claims were
+  checked. All prompts and transcripts are linked from this page.
+comments: 2 pages. Demo entry for the dongxiv prototype, not a real paper.
+primary_subject: Digital Libraries
+keywords: [reproducibility, workflow]
+vibe:
+  agents: [Claude Code]
+  models: [Claude Opus 5.5]
+versions:
+  - date: "2026-11-24T20:18:09Z"
+    file: v1.pdf
+    sha256: 13eb9441445e2eafeb5407577d65f8b775a17a2e2ef1a6910c4c194b731f0517
+    pages: 2

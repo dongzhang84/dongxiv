@@ -1,0 +1,69 @@
+---
+import Base from '../../layouts/Base.astro';
+import site from '../../../site.config.mjs';
+const n = site.name;
+---
+<Base title="About" crumbs={[{ label: 'about' }]}>
+  <div class="prose">
+    <h1 class="page-title">About {n}</h1>
+    <p>
+      {n} is a personal archive of research papers by {site.author}. It is laid out like a preprint server, but it hosts
+      only the author's own work and has no moderation, submission or review process. It is not affiliated with arXiv or
+      Cornell University.
+    </p>
+
+    <h2 id="vibe">Vibe research</h2>
+    <p>
+      The papers here are produced through <em>vibe research</em>: the questions, the key ideas and the final judgement
+      are human, while much of the exploration, computation, checking and writing is done together with AI systems. Each
+      abstract page has a section <strong>How this paper was made</strong> that states, as far as the author records it,
+      who did what, which agent systems and models were used, how the results were checked, and where supporting
+      materials (code, data, transcripts) can be found.
+    </p>
+
+    <h2 id="verification">Verification marks</h2>
+    <table class="kv legend">
+      <tr><th scope="row">Machine-verified</th><td>The results were checked by AI systems (for example independent AI review of the manuscript or of the derivations). This is not formal verification.</td></tr>
+      <tr><th scope="row">Human-verified</th><td>The author has checked the results by hand.</td></tr>
+      <tr><th scope="row">Formally verified</th><td>The main results have been checked in a proof assistant (for example Lean).</td></tr>
+    </table>
+    <p>
+      <span class="mark mark-yes">✓</span> yes &nbsp; <span class="mark mark-partial">◐</span> partially &nbsp;
+      <span class="mark mark-no">✗</span> no &nbsp; <span class="mark mark-na">–</span> not stated.
+      These marks are the author's own statements. Readers should check every claim independently before relying on it.
+    </p>
+
+    <h2 id="identifiers">Identifiers</h2>
+    <p>
+      Every paper has a permanent identifier <code>{n}:YYMM.NNNN</code>. YYMM is the year and month of the first version
+      (UTC) and NNNN is its order within that month. A specific version is cited as <code>{n}:YYMM.NNNNvN</code>; the
+      identifier without a version always points to the latest version.
+    </p>
+    <table class="kv">
+      <tr><th scope="row">Abstract page</th><td><code>/abs/YYMM.NNNN/</code> (latest), <code>/abs/YYMM.NNNNvN/</code> (version N)</td></tr>
+      <tr><th scope="row">PDF</th><td><code>/pdf/YYMM.NNNN.pdf</code> (latest), <code>/pdf/YYMM.NNNNvN.pdf</code> (version N)</td></tr>
+    </table>
+    <p>These addresses never change. A withdrawn paper keeps its page and identifier, with a withdrawal notice.</p>
+
+    <h2 id="integrity">Versions and integrity</h2>
+    <p>
+      A posted PDF is never replaced. Any change, however small, is posted as a new version, and the version history on
+      each abstract page lists the UTC time, page count and SHA-256 hash of every version. The site is rebuilt from a
+      <a href={site.repoUrl}>public Git repository</a>, and the build refuses to publish if any stored PDF no longer
+      matches its recorded hash. The commit history of that repository is a second, independent record of when each
+      version was added.
+    </p>
+    <p>To check that a PDF you downloaded is the posted one, compare its hash with the one on the abstract page:</p>
+    <pre class="code">shasum -a 256 2611.0001v1.pdf       # macOS / Linux
+certutil -hashfile 2611.0001v1.pdf SHA256   # Windows</pre>
+
+    <h2 id="citing">Citing</h2>
+    <p>
+      Each abstract page has a BibTeX entry. Cite a paper as <code>{n}:YYMM.NNNN</code> with its URL, or add the version
+      (<code>vN</code>) to refer to a specific version.
+    </p>
+
+    <h2 id="feed">Feed</h2>
+    <p>New papers and new versions appear in the <a href="/feed.xml">Atom feed</a>.</p>
+  </div>
+</Base>

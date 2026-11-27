@@ -1,0 +1,36 @@
+# 示例论文（demo），正式上线前删除
+title: Exact solutions of a damped oscillator with delayed feedback
+authors: [Dong]
+abstract: |
+  We study the delay differential equation $\ddot x(t) + \gamma \dot x(t) + \omega^2 x(t-\tau) = 0$ and give
+  closed-form solutions in terms of the Lambert $W$ function. The characteristic roots
+  $$\lambda_k = \frac{1}{\tau} W_k\!\left(-\omega^2 \tau^2 e^{\gamma\tau}\right) - \gamma$$
+  determine stability, and we identify the critical delay $\tau_c$ at which the system first becomes unstable.
+
+  In the second version we add the small-delay expansion and compare it with direct numerical integration.
+comments: 5 pages, 2 figures. Demo entry for the dongxiv prototype, not a real paper. See also [the code](https://github.com/dongzhang84/dongxiv).
+primary_subject: Mathematical Physics
+subjects: [Dynamical Systems, Classical Physics]
+keywords: [delay differential equations, Lambert W function, stability]
+links:
+  - { label: Code, url: "https://github.com/dongzhang84/dongxiv" }
+vibe:
+  human_role: Problem, key idea (Lambert W ansatz), checking of all derivations
+  agents: [Claude Code]
+  models: [Claude Opus 5.5]
+  machine_verified: "yes"
+  human_verified: partial
+  formal_verified: "no"
+  materials:
+    - { label: Derivation notebook, url: "https://github.com/dongzhang84/dongxiv" }
+  notes: Numerical comparisons were run by the agent and re-run by the author.
+versions:
+  - date: "2026-11-03T09:12:00Z"
+    file: v1.pdf
+    sha256: f15f6df5587a6a781620ae40bca239de2800443e05b899c43c892c00e7e896c8
+    pages: 4
+  - date: "2026-11-20T14:40:31Z"
+    file: v2.pdf
+    sha256: 86764fa9ae13f75114c54df0f4469b1d4f664dbd835e204941de69e53ede8305
+    pages: 5
+    note: Added the small-delay expansion (Section 4) and a numerical comparison.
