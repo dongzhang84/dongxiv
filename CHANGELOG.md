@@ -2,6 +2,7 @@
 
 ## 2026-11-27
 
+- **首页简介精简为一句**：去掉 SHA-256 和 "not peer-reviewed" 两句（页脚和 About 页仍保留免责说明）。
 - **修正 Midsphere 论文的日期**：发布时日期被存成了 0006-11-23，编号成了 0611.0001；改为 2026-11-23，编号 dongxiv:2611.0001（旧编号刚发布几分钟，没有对外使用）。后台和构建现在会拒绝 2000 年以前的日期。
 - **Formal proof 的源码链接可以用 main 分支**：不再要求固定 commit；链接里有 commit 号时，摘要页照旧显示 "(commit xxxxxxx)"。
 - **首页和学科页的列表也显示 "Formal proof" 一行**（系统 · 范围 · source 链接），放在 Comments 下面；两篇几何论文 Comments 里的 "formalized in Lean 4" 因此去掉，避免重复。

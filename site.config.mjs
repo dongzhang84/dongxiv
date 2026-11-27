@@ -13,5 +13,5 @@ export default {
   repoUrl: 'https://github.com/dongzhang84/dongxiv',
   // 首页简介，支持 [文字](链接) 和 *斜体*
   intro:
-    'A personal archive of research papers produced through *vibe research*: the problems, ideas and judgement are human; much of the exploration, computation and writing is done together with AI systems. Each paper has a permanent identifier and a public version history with the SHA-256 hash of every PDF.',
+    'A personal archive of research papers produced through *vibe research*: the problems, ideas and judgement are human, while much of the exploration, computation and writing is done together with AI.',
 };

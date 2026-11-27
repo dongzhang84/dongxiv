@@ -10,7 +10,7 @@ const subjects = subjectsOf(papers);
 const recent = papers.slice(0, 3);
 ---
 <Base math>
-  <p class="home-intro" set:html={`${inline(site.intro)} Materials on this site are not peer-reviewed.`} />
+  <p class="home-intro" set:html={inline(site.intro)} />
   {subjects.length > 0 && (
     <p class="home-subjects">
       Browse by subject:{' '}
