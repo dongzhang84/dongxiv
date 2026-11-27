@@ -41,6 +41,14 @@ export function checkingText(vb: { machine_verified?: Tri; human_verified?: Tri;
   ].filter(Boolean).join('; ');
 }
 
+/** 摘要页 "Formal proof" 一行：系统 · 范围 · source (commit xxxxxxx)，下面一行是局限说明 */
+export function formalHtml(f: { system: string; scope?: string; url: string; note?: string }) {
+  const commit = /\/(?:tree|blob|commit)\/([0-9a-f]{7,40})(?:\/|$)/.exec(f.url)?.[1];
+  const source = `<a href="${esc(f.url)}">source</a>${commit ? ` (commit <code>${commit.slice(0, 7)}</code>)` : ''}`;
+  const line = [esc(f.system), f.scope && inline(f.scope), source].filter(Boolean).join(' · ');
+  return f.note ? `${line}<br><span class="formal-note">${inline(f.note)}</span>` : line;
+}
+
 export function bibtex(p: Paper, v?: PaperVersion) {
   const lines = [
     `@misc{${pid(p.id)},`,

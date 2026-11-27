@@ -144,6 +144,15 @@ function buildMeta(f) {
   if (clean(f.license) && clean(f.license) !== site.defaultLicense) m.license = clean(f.license);
   const links = cleanLinks(f.links, 'Links');
   if (links.length) m.links = links;
+  const fo = f.formal ?? {};
+  const formal = {};
+  for (const k of ['system', 'scope', 'url', 'note']) if (clean(fo[k])) formal[k] = clean(fo[k]);
+  if (Object.keys(formal).length) {
+    if (!formal.system || !formal.url) fail('Formal proof: system and source URL are both required.');
+    if (!/^https?:\/\/\S+$/.test(formal.url)) fail('Formal proof: the source URL must start with http(s)://');
+    if (/\/(tree|blob)\/(main|master)(\/|$)/.test(formal.url)) fail('Formal proof: link to a fixed commit, not a branch such as main (on GitHub, press y to get a permalink).');
+    m.formal = formal;
+  }
   if (clean(f.withdrawn)) m.withdrawn = clean(f.withdrawn);
 
   const v = f.vibe ?? {};

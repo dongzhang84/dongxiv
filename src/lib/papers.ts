@@ -19,6 +19,11 @@ const Subject = z.string().refine((s) => SUBJECTS.has(s), {
 const Tri = z.enum(['yes', 'no', 'partial']).optional();
 const Link = z.object({ label: z.string().min(1), url: z.url() }).strict();
 
+// 形式化证明：所用系统、证明范围、源码的永久链接（应指向固定 commit）、局限说明
+const Formal = z
+  .object({ system: z.string().min(1), scope: z.string().optional(), url: z.url(), note: z.string().optional() })
+  .strict();
+
 const Version = z
   .object({
     date: z.coerce.date(),
@@ -40,6 +45,7 @@ const Meta = z
     keywords: z.array(z.string()).default([]),
     license: z.string().optional(),
     links: z.array(Link).default([]),
+    formal: Formal.optional(),
     withdrawn: z.string().optional(),
     vibe: z
       .object({

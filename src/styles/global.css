@@ -92,6 +92,8 @@ blockquote.abstract p:last-child { margin-bottom: 0; }
 .metatable td.label { color: var(--text); white-space: nowrap; }
 .metatable td.label a { color: var(--text); text-decoration: underline dotted; }
 .primary-subject { font-weight: 600; }
+.formal-note { color: var(--muted); font-style: italic; }
+.metatable code { font-size: 11.5px; }
 
 .submission-history { font-size: 13.5px; line-height: 1.6; }
 .submission-history h2 { font-size: 16.5px; font-weight: 600; margin: 22px 0 4px; }

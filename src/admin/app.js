@@ -162,6 +162,7 @@ const triSelect = (name, val) => `<select name="${name}">
 
 function metaFields(m, { withdrawn = false } = {}) {
   const v = m.vibe || {};
+  const fm = m.formal || {};
   return `
   <div class="row"><label>Title</label><div><input name="title" value="${esc(m.title)}"><div class="preview" data-prev="title"></div></div></div>
   <div class="row"><label>Authors</label><div><input name="authors" value="${esc((m.authors || [SITE.author]).join(', '))}"><div class="hint">Separate multiple authors with commas</div></div></div>
@@ -173,6 +174,11 @@ function metaFields(m, { withdrawn = false } = {}) {
   <div class="row"><label>Keywords</label><div><input name="keywords" value="${esc((m.keywords || []).join(', '))}"><div class="hint">Optional, comma-separated</div></div></div>
   <div class="row"><label>License</label><div><input name="license" value="${esc(m.license || SITE.defaultLicense)}"></div></div>
   <div class="row"><label>Links</label><div>${multiRows('links', m.links, 'link')}<div class="hint">Optional, e.g. a code repository</div></div></div>
+  <h2>Formal proof (optional)</h2>
+  <div class="row"><label>System</label><div><input name="formal_system" value="${esc(fm.system)}" placeholder="e.g. Lean 4 + Mathlib"></div></div>
+  <div class="row"><label>Scope</label><div><input name="formal_scope" value="${esc(fm.scope)}" placeholder="e.g. all 5 main theorems (16 formal statements)"></div></div>
+  <div class="row"><label>Source URL</label><div><input name="formal_url" value="${esc(fm.url)}" placeholder="https://github.com/…/tree/<commit>/…"><div class="hint">A permalink to the verified commit (on GitHub, press y), not a branch such as main</div></div></div>
+  <div class="row"><label>Note</label><div><input name="formal_note" value="${esc(fm.note)}" placeholder="Optional, e.g. what is not formalized"></div></div>
   <h2>AI involvement (optional; hidden if empty)</h2>
   <div class="row"><label>AI tools</label><div><input name="agents" value="${esc((v.agents || []).join(', '))}" placeholder="e.g. Claude Code"></div></div>
   <div class="row"><label>Models</label><div><input name="models" value="${esc((v.models || []).join(', '))}" placeholder="e.g. Claude Opus 5.5"></div></div>
@@ -201,6 +207,7 @@ function readMeta(root) {
     title: val('title'), authors: list(val('authors')), abstract: val('abstract'), comments: val('comments'),
     primary_subject: val('primary_subject'), subjects: readMulti(root, 'subjects'), keywords: list(val('keywords')),
     license: val('license'), links: readMulti(root, 'links'), withdrawn: val('withdrawn'),
+    formal: { system: val('formal_system'), scope: val('formal_scope'), url: val('formal_url'), note: val('formal_note') },
     vibe: { agents: list(val('agents')), models: list(val('models')), human_role: val('human_role'),
       machine_verified: val('machine_verified'), human_verified: val('human_verified'), formal_verified: val('formal_verified'),
       materials: readMulti(root, 'materials'), notes: val('notes') },

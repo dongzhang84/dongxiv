@@ -2,8 +2,13 @@ title: Five Theorems on the Orthocentric Tetrahedron
 authors:
   - Dong Zhang
 abstract: We have discovered five new theorems of the orthocentric tetrahedron, and prove all of them here. None of them holds for a general tetrahedron. (1) For each vertex, the sphere through the vertex and the nine-point circle of the opposite face also passes through three further named points, and the orthocentre $H$ has power $\frac32p$ with respect to it, where $p$ is the power of the polar sphere. (2) For every point $P$ of the Euler line, the isogonal conjugate $P^*$ and the isotomic conjugate $P^t$ are coplanar with the Euler line. (3) For every point $P$ of the line through the circumcentre $O$ and its isogonal conjugate $O^*$, the points $O$, $P^*$, $P^t$ are collinear. (4) Seven lines, four of them chords of the circumsphere and three of them chords of the midpoint sphere, pass through one point of the Euler line. (5) The Fermat--Torricelli point $F$, the circumcentre $O$, and the point with barycentric weights $a_i/|FV_i|^2$ are collinear, where $a_i$ is the product of the two segments into which $H$ divides the altitude from $V_i$. The common tool is an algebraic model of the orthocentric tetrahedron in which every orthocentric tetrahedron is given by four numbers $a_0,\dots,a_3$; for Theorem~4 we also use the linear model of spheres. The theorems were found by a computer search of collinear, coplanar, concyclic and cospherical configurations among about $1200$ special points, which we describe in an appendix.
-comments: 20 pages, 6 figures, 3 tables
+comments: 20 pages, 6 figures, 3 tables. Main theorems formalized in Lean 4
 primary_subject: Metric Geometry
+formal:
+  system: Lean 4 + Mathlib
+  scope: all 5 main theorems (16 formal statements)
+  url: https://github.com/dongzhang84/geometry-research/tree/61c9a573b57a6a549220a40d73993d8c6ac142bc/lean/GeometryResearch/Orthocentric
+  note: The isogonal conjugate is defined by barycentric coordinates, as in the paper; its geometric characterization (reflection in the dihedral bisector planes) is not formalized.
 vibe:
   agents:
     - Claude Code

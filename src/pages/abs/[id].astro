@@ -5,7 +5,7 @@ import site from '../../../site.config.mjs';
 import { getPapers, latest, type Paper, type PaperVersion } from '../../lib/papers';
 import {
   pid, absUrl, pdfUrl, full, inline, esc, paragraphs, subjectUrl, checkingText, bibtex,
-  fmtShort, fmtDateTime, fmtDay,
+  fmtShort, fmtDateTime, fmtDay, formalHtml,
 } from '../../lib/format';
 
 export function getStaticPaths() {
@@ -49,7 +49,7 @@ if (multi) {
 
 // 元数据表里关于 AI 的几行
 const tools = [...vb.agents, ...vb.models];
-const checking = checkingText(vb);
+const checking = checkingText({ ...vb, formal_verified: p.formal ? 'yes' : vb.formal_verified });
 
 const abs = full(absUrl(p.id));
 const ymd = (d: Date) => d.toISOString().slice(0, 10).replace(/-/g, '/');
@@ -96,6 +96,7 @@ const shownId = `${p.id}${pinned ? `v${v.v}` : ''}`;
               <td class="label">Subjects:</td>
               <td><span class="primary-subject">{p.primary_subject}</span>{p.subjects.length > 0 && `; ${p.subjects.join('; ')}`}</td>
             </tr>
+            {p.formal && <tr><td class="label">Formal proof:</td><td set:html={formalHtml(p.formal)} /></tr>}
             {p.keywords.length > 0 && <tr><td class="label">Keywords:</td><td>{p.keywords.join(', ')}</td></tr>}
             {tools.length > 0 && <tr><td class="label">AI tools:</td><td>{tools.join('; ')}</td></tr>}
             {vb.human_role && <tr><td class="label">Author's role:</td><td set:html={inline(vb.human_role)} /></tr>}

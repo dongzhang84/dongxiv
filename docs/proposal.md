@@ -133,7 +133,12 @@ keywords: [...]
 license: CC BY 4.0            # 不写则用站点默认
 links:
   - { label: Code, url: "https://..." }
-withdrawn: ...                # 写了就表示已撤稿，内容是撤稿说明
+formal:                       # 选填：形式化证明，摘要页显示为 "Formal proof" 一行
+  system: Lean 4 + Mathlib
+  scope: all 5 main theorems (16 formal statements)
+  url: https://github.com/.../tree/<commit>/...   # 必须是固定 commit 的永久链接，不能是 main
+  note: ...                   # 选填：没有形式化的部分
+withdrawn: ...                # 写了就表示已撤稿：从列表、订阅、sitemap 中撤下，摘要页保留并显示撤稿说明
 
 vibe:                         # 每一项都可省略，省略的不显示
   human_role: Problem, key ideas, final checking
