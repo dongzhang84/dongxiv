@@ -2,11 +2,11 @@
 import Base from '../../layouts/Base.astro';
 import Listing from '../../components/Listing.astro';
 import site from '../../../site.config.mjs';
-import { getPapers, type Paper } from '../../lib/papers';
+import { getListed, type Paper } from '../../lib/papers';
 import { slug, subjectsOf } from '../../lib/format';
 
 export function getStaticPaths() {
-  const papers = getPapers();
+  const papers = getListed();
   return subjectsOf(papers).map((s) => ({
     params: { subject: s.key },
     props: { name: s.name, papers: papers.filter((p) => [p.primary_subject, ...p.subjects].some((x) => slug(x) === s.key)) },

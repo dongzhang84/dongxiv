@@ -2,10 +2,10 @@
 import Base from '../layouts/Base.astro';
 import Listing from '../components/Listing.astro';
 import site from '../../site.config.mjs';
-import { getPapers } from '../lib/papers';
+import { getListed } from '../lib/papers';
 import { inline, subjectsOf, subjectUrl, absUrl, pid, fmtShort } from '../lib/format';
 
-const papers = getPapers();
+const papers = getListed();
 const subjects = subjectsOf(papers);
 const recent = papers.slice(0, 3);
 ---

@@ -199,7 +199,7 @@ function metaFields(m, { withdrawn = false } = {}) {
     <label>Formally verified ${triSelect('formal_verified', v.formal_verified)}</label></div></div>
   <div class="row"><label>Materials</label><div>${multiRows('materials', v.materials, 'link')}<div class="hint">Code, data, AI session logs, etc.</div></div></div>
   <div class="row"><label>AI notes</label><div><input name="notes" value="${esc(v.notes)}"></div></div>
-  ${withdrawn ? `<h2>Withdrawal</h2><div class="row"><label>Withdrawal note</label><div><input name="withdrawn" value="${esc(m.withdrawn)}"><div class="hint">Filling this in withdraws the paper; its page and identifier stay</div></div></div>` : ''}`;
+  ${withdrawn ? `<h2>Withdrawal</h2><div class="row"><label>Withdrawal note</label><div><input name="withdrawn" value="${esc(m.withdrawn)}"><div class="hint">Filling this in withdraws the paper: it disappears from the listings, feed and search engines; its abstract page stays reachable by direct link, with this note</div></div></div>` : ''}`;
 }
 function wirePreviews(root) {
   root.querySelectorAll('[data-prev]').forEach((p) => {

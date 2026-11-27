@@ -119,4 +119,7 @@ export function getPapers(): Paper[] {
   return papers;
 }
 
+/** 网站上列出的论文：撤稿的不出现在首页、学科页、订阅和 sitemap 里，只保留摘要页供旧链接访问。 */
+export const getListed = () => getPapers().filter((p) => !p.withdrawn);
+
 export const latest = (p: Paper) => p.versions[p.versions.length - 1];

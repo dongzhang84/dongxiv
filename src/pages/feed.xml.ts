@@ -1,11 +1,11 @@
 // Atom 订阅：每篇论文一条，更新时间取最新版本的日期
 import type { APIRoute } from 'astro';
 import site from '../../site.config.mjs';
-import { getPapers, latest } from '../lib/papers';
+import { getListed, latest } from '../lib/papers';
 import { esc, full, absUrl, pid } from '../lib/format';
 
 export const GET: APIRoute = () => {
-  const papers = getPapers();
+  const papers = getListed();
   const updated = papers.reduce((m, p) => (p.updated > m ? p.updated : m), new Date(0));
   const entries = papers
     .map((p) => {

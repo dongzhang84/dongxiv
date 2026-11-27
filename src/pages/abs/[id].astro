@@ -9,9 +9,11 @@ import {
 } from '../../lib/format';
 
 export function getStaticPaths() {
-  const papers = [...getPapers()].reverse(); // 从旧到新，用来算上一篇/下一篇
-  return papers.flatMap((paper, i) => {
-    const nav = { prev: papers[i - 1]?.id, next: papers[i + 1]?.id };
+  // 上一篇/下一篇只在列出的论文之间跳转；撤稿的论文保留摘要页（旧链接仍可访问），但不参与浏览
+  const listed = [...getPapers()].reverse().filter((p) => !p.withdrawn); // 从旧到新
+  return getPapers().flatMap((paper) => {
+    const i = listed.indexOf(paper);
+    const nav = i < 0 ? {} : { prev: listed[i - 1]?.id, next: listed[i + 1]?.id };
     return [
       { params: { id: paper.id }, props: { paper, version: latest(paper), pinned: false, nav } },
       ...paper.versions.map((version) => ({
@@ -54,8 +56,8 @@ const ymd = (d: Date) => d.toISOString().slice(0, 10).replace(/-/g, '/');
 const description = p.abstract.trim().replace(/\s+/g, ' ').slice(0, 300);
 const shownId = `${p.id}${pinned ? `v${v.v}` : ''}`;
 ---
-<Base title={`[${shownId}] ${p.title}`} description={description} canonical={abs} noindex={pinned} math>
-  <Fragment slot="head">
+<Base title={`[${shownId}] ${p.title}`} description={description} canonical={abs} noindex={pinned || !!p.withdrawn} math>
+  {!p.withdrawn && <Fragment slot="head">
     <meta name="citation_title" content={p.title} />
     {p.authors.map((a) => <meta name="citation_author" content={a} />)}
     <meta name="citation_publication_date" content={ymd(p.first)} />
@@ -67,12 +69,12 @@ const shownId = `${p.id}${pinned ? `v${v.v}` : ''}`;
     <meta property="og:title" content={p.title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={abs} />
-  </Fragment>
+  </Fragment>}
 
   <div id="abs-outer">
     <div class="leftcolumn">
       <div class="subheader">
-        <h1><a href="/">{site.name}</a> &gt; <a href={subjectUrl(p.primary_subject)}>{p.primary_subject}</a></h1>
+        <h1><a href="/">{site.name}</a> &gt; {p.withdrawn ? p.primary_subject : <a href={subjectUrl(p.primary_subject)}>{p.primary_subject}</a>}</h1>
       </div>
       <div id="abs">
         <div class="dateline">[<Fragment set:html={dateline} />]</div>
@@ -149,7 +151,7 @@ const shownId = `${p.id}${pinned ? `v${v.v}` : ''}`;
         <div class="abs-license">License: {license}</div>
       </div>
 
-      <div class="browse">
+      {!p.withdrawn && <div class="browse">
         <h3>Current browse context:</h3>
         <div class="current"><a href={subjectUrl(p.primary_subject)}>{p.primary_subject}</a></div>
         <div class="prevnext">
@@ -164,7 +166,7 @@ const shownId = `${p.id}${pinned ? `v${v.v}` : ''}`;
             <div class="switch">{p.subjects.map((s) => <><a href={subjectUrl(s)}>{s}</a><br /></>)}</div>
           </>
         )}
-      </div>
+      </div>}
 
       <div class="bib-export">
         <h3><a href="#bibtex" id="bib-toggle" aria-controls="bibtex" aria-expanded="false">Export BibTeX Citation</a></h3>
