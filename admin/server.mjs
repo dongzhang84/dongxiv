@@ -55,6 +55,7 @@ function normalizeDate(d) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(d ?? '')) fail('Date must be in YYYY-MM-DD format.');
   if (Number.isNaN(Date.parse(d))) fail('Invalid date.');
   if (d > todayUTC()) fail('The date cannot be later than today.');
+  if (d < '2000-01-01') fail(`The year ${d.slice(0, 4)} looks wrong; identifiers use the year 20YY.`);
   return d === todayUTC() ? new Date().toISOString().replace(/\.\d+Z$/, 'Z') : d;
 }
 
@@ -223,7 +224,7 @@ async function publish() {
   } catch (e) {
     const out = `${e.stdout ?? ''}\n${e.stderr ?? ''}`.split('\n');
     // 优先显示我们自己的校验信息（格式、学科、哈希、日期），其次是最后几行
-    const i = out.findIndex((l) => /is invalid|SHA-256|not found|identifier|must be later|arXiv category/.test(l));
+    const i = out.findIndex((l) => /is invalid|SHA-256|not found|identifier|must be later|wrong year|arXiv category/.test(l));
     log.push((i >= 0 ? out.slice(i, i + 6) : out.slice(-25)).join('\n').trim());
     return { ok: false, log: log.join('\n') + '\n\nBuild failed; nothing was committed or pushed.' };
   }

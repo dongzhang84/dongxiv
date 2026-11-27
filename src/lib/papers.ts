@@ -104,6 +104,7 @@ function loadOne(id: string): Paper {
   });
 
   const first = versions[0].date;
+  if (first.getUTCFullYear() < 2000 || first.getUTCFullYear() > 2099) throw new Error(`${where}: the v1 date ${String(raw.versions?.[0]?.date)} has a wrong year (expected 20YY)`);
   const yymm = `${String(first.getUTCFullYear()).slice(2)}${String(first.getUTCMonth() + 1).padStart(2, '0')}`;
   if (!id.startsWith(yymm)) throw new Error(`${where}: identifier ${id} must match the year and month of v1 (${yymm})`);
 

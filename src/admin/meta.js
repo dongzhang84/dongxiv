@@ -17,6 +17,7 @@ export function normalizeDate(d) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(d ?? '')) fail('Date must be in YYYY-MM-DD format.');
   if (Number.isNaN(Date.parse(d))) fail('Invalid date.');
   if (d > todayUTC()) fail('The date cannot be later than today.');
+  if (d < '2000-01-01') fail(`The year ${d.slice(0, 4)} looks wrong; identifiers use the year 20YY.`);
   return d === todayUTC() ? new Date().toISOString().replace(/\.\d+Z$/, 'Z') : d;
 }
 

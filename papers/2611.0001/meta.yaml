@@ -12,7 +12,7 @@ vibe:
   agents:
     - Claude Code
 versions:
-  - date: 0006-11-23
+  - date: 2026-11-23
     file: v1.pdf
     sha256: 76f1f3bc098b8e363f443da532e55bcbd34e280af38ff3546c98905ecce874e1
     pages: 21
