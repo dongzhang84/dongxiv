@@ -10,7 +10,10 @@
     "admin": "node admin/server.mjs"
   },
   "dependencies": {
+    "@astrojs/vercel": "11.0.21",
     "astro": "7.4.7",
+    "katex": "0.16.47",
+    "pdfjs-dist": "6.5.438",
     "yaml": "2.9.1"
   }
 }

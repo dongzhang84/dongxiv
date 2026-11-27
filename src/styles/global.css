@@ -34,6 +34,8 @@ code, pre { font-family: var(--mono); font-size: 0.9em; }
 .site-nav { display: flex; align-items: center; gap: 4px; }
 .site-nav a { color: rgba(255, 255, 255, 0.88); font-size: 14px; font-weight: 600; padding: 8px 12px; border-radius: 3px; display: inline-flex; align-items: center; gap: 6px; }
 .site-nav a:hover { color: #fff; background: rgba(255, 255, 255, 0.1); text-decoration: none; }
+.site-nav a.submit-link { border: 1px solid rgba(255, 255, 255, 0.6); margin-left: 6px; }
+.site-nav a[hidden] { display: none; }
 
 main { padding: 0 20px 40px; min-height: 60vh; }
 .page-heading { font-size: 26px; font-weight: 600; margin: 18px 0 10px; }

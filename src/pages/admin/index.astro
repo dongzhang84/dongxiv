@@ -1,0 +1,102 @@
+---
+// 在线发布后台。页面本身是静态的；登录走 /api/auth/*，读写仓库在浏览器里直接调用 GitHub API。
+import site from '../../../site.config.mjs';
+const [, owner, repo] = new URL(site.repoUrl).pathname.split('/');
+const data = { name: site.name, author: site.author, defaultLicense: site.defaultLicense, repo: `${owner}/${repo}`, branch: 'main' };
+---
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="referrer" content="no-referrer" />
+<title>dongxiv 发布后台</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<style is:global>
+  :root { --brand: #26456e; --tint: #e9eef5; --rule: #d9d9d9; --muted: #5f6670; --link: #1c4fb4; --ok: #1f7a3f; --bad: #b3261e; --warn-bg: #fff6df; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 -apple-system, "IBM Plex Sans", "PingFang SC", "Helvetica Neue", Arial, sans-serif; color: #111; background: #fafafa; }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header { background: var(--brand); color: #fff; display: flex; align-items: center; gap: 22px; padding: 0 24px; height: 52px; flex-wrap: wrap; }
+  header .logo { font-size: 22px; font-weight: 600; color: #fff; }
+  header .logo i { font-weight: 300; }
+  header .logo small { font-size: 14px; font-weight: 400; opacity: .8; margin-left: 8px; }
+  header nav { display: flex; gap: 6px; margin-left: auto; align-items: center; }
+  header nav a { color: #fff; opacity: .9; padding: 6px 12px; border-radius: 3px; font-weight: 600; font-size: 14px; }
+  header nav a:hover, header nav a.on { background: rgba(255,255,255,.14); text-decoration: none; opacity: 1; }
+  .badge { background: #f2b544; color: #222; border-radius: 9px; padding: 0 7px; font-size: 12px; margin-left: 4px; }
+  main { max-width: 1060px; margin: 0 auto; padding: 22px 24px 60px; }
+  h1 { font-size: 24px; margin: 4px 0 16px; }
+  h2 { font-size: 17px; margin: 26px 0 10px; padding-bottom: 4px; border-bottom: 1px solid var(--rule); }
+  .card { background: #fff; border: 1px solid var(--rule); border-radius: 4px; padding: 16px 18px; margin-bottom: 16px; }
+  table.papers { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--rule); }
+  table.papers th, table.papers td { text-align: left; padding: 9px 12px; border-bottom: 1px solid #eee; vertical-align: top; font-size: 14px; }
+  table.papers th { background: #f3f4f6; font-weight: 600; }
+  .t-title { font-weight: 600; }
+  .vers { white-space: nowrap; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .status { font-size: 12px; padding: 1px 7px; border-radius: 9px; white-space: nowrap; }
+  .st-new { background: #fff0c2; } .st-changed { background: #ffe2c2; } .st-published { background: #e1f3e6; color: var(--ok); }
+  .actions a, .actions button { margin-right: 10px; font-size: 13.5px; white-space: nowrap; }
+  button.link { background: none; border: 0; padding: 0; color: var(--link); cursor: pointer; font: inherit; }
+  button.link.danger { color: var(--bad); }
+  .row { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 10px 14px; align-items: start; margin-bottom: 12px; }
+  .row > label { padding-top: 6px; font-weight: 600; font-size: 14px; }
+  .row .hint { color: var(--muted); font-size: 12.5px; margin-top: 3px; }
+  input[type=text], input[type=date], input:not([type]), textarea, select { font: inherit; font-size: 14px; padding: 6px 8px; border: 1px solid #b9bec6; border-radius: 3px; width: 100%; background: #fff; }
+  textarea { min-height: 150px; resize: vertical; }
+  .tri { display: flex; gap: 14px; flex-wrap: wrap; }
+  .tri label { font-weight: 400; display: flex; gap: 6px; align-items: center; }
+  .tri select { width: auto; }
+  .multi > div { display: flex; gap: 6px; margin-bottom: 6px; }
+  .multi > div input { flex: 1; }
+  .preview { margin-top: 6px; padding: 8px 10px; background: var(--tint); border-radius: 3px; font-size: 14px; min-height: 1.5em; }
+  .preview:empty { display: none; }
+  .drop { border: 2px dashed #9aa6b5; border-radius: 6px; padding: 26px; text-align: center; background: #fff; cursor: pointer; }
+  .drop.over { background: var(--tint); border-color: var(--brand); }
+  .drop .big { font-size: 16px; font-weight: 600; }
+  .pdfinfo { margin-top: 10px; font-size: 13.5px; }
+  .pdfinfo code { font-size: 12px; word-break: break-all; }
+  .btn { font: inherit; font-size: 14px; font-weight: 600; padding: 8px 18px; border-radius: 4px; border: 1px solid var(--brand); background: var(--brand); color: #fff; cursor: pointer; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn.secondary { background: #fff; color: var(--brand); }
+  .msg { padding: 9px 12px; border-radius: 4px; margin: 12px 0; font-size: 14px; white-space: pre-wrap; }
+  .msg.err { background: #fde8e7; color: var(--bad); }
+  .msg.ok { background: #e1f3e6; color: var(--ok); }
+  .msg.warn { background: var(--warn-bg); color: #7a5300; }
+  pre.log { background: #1e2229; color: #e6e6e6; padding: 12px; border-radius: 4px; font-size: 12.5px; white-space: pre-wrap; max-height: 420px; overflow: auto; }
+  details > summary { cursor: pointer; font-weight: 600; color: var(--link); margin: 8px 0; }
+  .idbox { font-family: ui-monospace, Menlo, monospace; font-weight: 600; }
+  .toast { position: fixed; right: 20px; bottom: 20px; background: #1e2229; color: #fff; padding: 10px 16px; border-radius: 4px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  @media (max-width: 700px) { .row { grid-template-columns: 1fr; gap: 4px; } .row > label { padding-top: 0; } }
+  header .who { color: #fff; opacity: .85; font-size: 13.5px; margin-left: 10px; }
+  button.link.light { color: #fff; text-decoration: underline; }
+  .login { max-width: 520px; margin: 40px auto; text-align: center; }
+  .login .btn { display: inline-block; margin-top: 8px; }
+  .login .btn:hover { text-decoration: none; }
+  #deploy { position: sticky; top: 0; z-index: 5; }
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="#/">dong<i>xiv</i><small>发布后台</small></a>
+  <nav>
+    <a href="#/" data-nav="list">论文</a>
+    <a href="#/new" data-nav="new">+ 新论文</a>
+    <a href="/" target="_blank" rel="noopener">打开网站 ↗</a>
+    <span class="who" id="who"></span>
+  </nav>
+</header>
+<main>
+  <div id="deploy" hidden></div>
+  <div id="app"><p class="muted">加载中…</p></div>
+</main>
+<datalist id="subject-list"></datalist>
+<div id="toast" class="toast"></div>
+<script type="application/json" id="site-data" set:html={JSON.stringify(data)}></script>
+<script>import '../../admin/app.js';</script>
+</body>
+</html>

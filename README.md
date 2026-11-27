@@ -1,6 +1,6 @@
 # dongxiv
 
-A personal arXiv-style archive for my vibe research papers. Built with [Astro](https://astro.build), deployed as a static site.
+A personal arXiv-style archive for my vibe research papers. Built with [Astro](https://astro.build), deployed on Vercel as a static site (plus a small GitHub login function for the online admin).
 
 - Plan: [docs/proposal.md](docs/proposal.md)
 - Changes: [CHANGELOG.md](CHANGELOG.md)
@@ -10,12 +10,19 @@ A personal arXiv-style archive for my vibe research papers. Built with [Astro](h
 ```sh
 npm install
 npm run dev      # 开发预览：http://localhost:4321
-npm run build    # 生成静态网站到 dist/
+npm run build    # 构建并校验全站，输出到 .vercel/output/
 ```
 
 需要 Node 22 以上。
 
-## 发布论文（后台）
+## 发布论文
+
+两种方式，功能一样，写的是同一个仓库：
+
+- **在线后台**：<https://dongxiv.vercel.app/admin/>，用 GitHub 登录，点"发布"直接上线。设置和说明见 [docs/online-admin.md](docs/online-admin.md)。
+- **本地后台**：下面这个，先保存、预览，再一起发布。
+
+### 本地后台
 
 ```sh
 npm run admin    # 打开 http://localhost:4322 ，同时在 http://localhost:4321 启动网站预览
@@ -40,9 +47,11 @@ papers/<YYMM.NNNN>/   每篇论文一个文件夹
   v1.pdf, v2.pdf …    各版本 PDF，发布后不能替换
 site.config.mjs       站点配置（名字、作者、域名、是否允许收录、首页简介）
 src/lib/papers.ts     读取并校验所有论文；格式错误或哈希不一致时构建失败
-src/pages/            页面：首页列表、/abs/<id>/、/pdf/<id>.pdf、about、search、feed.xml、sitemap.xml
+src/pages/            页面：首页列表、/abs/<id>/、/pdf/<id>.pdf、about、feed.xml、sitemap.xml、admin（在线后台）
+src/pages/api/auth/   在线后台的 GitHub 登录（只有这里在服务器上运行）
+src/admin/            在线后台的界面和逻辑
 src/styles/global.css 样式
-admin/                发布后台（server.mjs + index.html）
+admin/                本地发布后台（server.mjs + index.html）
 ```
 
 字段说明见 [docs/proposal.md](docs/proposal.md) §5.2。学科名必须是 arXiv 分类表里的名字（`src/lib/arxiv-subjects.json`）。

@@ -2,6 +2,17 @@
 
 ## 2026-11-26
 
+- **在线后台** `https://dongxiv.vercel.app/admin/`：用 GitHub 登录（只限 dongzhang84）后，在网站上上传 PDF、发布新论文和新版本、修改信息。每次点"发布"就提交到 GitHub，Vercel 自动上线，页面显示上线进度。
+  - PDF 在浏览器里读取（pdf.js）：页数、SHA-256、标题、摘要、图表数预填，和本地后台规则一致。
+  - PDF 由浏览器直接传给 GitHub，不经过 Vercel，没有 4.5 MB 限制。
+  - 令牌来自只装在 dongxiv 仓库上的 GitHub App，8 小时失效；服务器不保存令牌。
+  - 网站顶栏的 Submit 按钮只在登录过后台的浏览器里显示。
+  - 接入 `@astrojs/vercel`：页面仍全部静态生成，只有 `/api/auth/*` 两个登录接口在服务器上运行。新增 `/version.json`（线上版本对应的 commit）。
+  - robots.txt 屏蔽 `/admin/` 和 `/api/`。
+  - 设置步骤见 `docs/online-admin.md`。
+- **KaTeX 升级到 0.16.47**（修复 0.16.11 的安全问题）。
+- **网站已部署**：https://dongxiv.vercel.app/ ；发布两篇论文（dongxiv:2609.0001、dongxiv:2610.0001），删除示例论文。
+
 - **阶段 2：发布后台** `npm run admin`（http://localhost:4322）
   - 新论文：拖入 PDF，自动读页数、SHA-256，预填标题、摘要和 "N pages, x figures, y tables"；选日期（补录旧论文只记日期，不编时刻），编号按 UTC 年月自动分配；学科从 arXiv 分类中选；AI 信息选填；摘要公式实时预览。
   - 发新版本、修改信息（含撤稿）、删除未发布的论文或版本；已发布的 PDF 和版本不能删除或替换。

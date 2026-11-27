@@ -40,7 +40,7 @@
 | 数据存储 | 不用数据库；每篇论文一个文件夹，放元数据文本文件和各版本 PDF | ✅ |
 | 代码仓库 | GitHub **公开**仓库 `dongxiv`（公开的 Git 历史可以作为发布时间的佐证） | ✅ |
 | 部署 | Vercel，`git push` 后自动部署 | ✅ |
-| 发布方式 | 本地管理后台（在 localhost 的网页上操作，`npm run admin`） | ✅ |
+| 发布方式 | 在线后台 `/admin/`（GitHub 登录）+ 本地后台 `npm run admin` | ✅ |
 | UI | 页面结构对标 arXiv；颜色、logo 和文案自己设计 | ✅ |
 | 搜索引擎 / Google Scholar 收录 | 暂时开启（`site.config.mjs` 的 `indexable` 一个开关） | ❓ 上线前再确认 |
 | 域名 | — | ❓ 待定 |
@@ -211,6 +211,8 @@ versions:                     # 由后台自动生成，不要手改
 - 后台只监听本机地址（127.0.0.1），网络上的其他设备访问不到。
 - 后台代码不会被部署到线上。
 
+**在线后台**（2026-11-26 加）：`https://dongxiv.vercel.app/admin/`，用 GitHub 登录（只限仓库主人），在浏览器里直接通过 GitHub API 提交，Vercel 自动部署。见 [online-admin.md](online-admin.md)。
+
 ---
 
 ## 9. 可信度与永久性
@@ -262,7 +264,7 @@ Scholar 没有申请入口，只能等爬虫来抓，一般要几周到几个月
 | **0. 定方案** ✅ | 定下名字、技术栈、主色、字段；域名和收录上线前再定 | 本文档 |
 | **1. 静态网站原型** ✅ | 列表页、摘要页、版本页、About、搜索、Atom、sitemap、Scholar 标签；三篇示例论文 | 本地可浏览的网站 |
 | **2. 发布后台** ✅ | 发布新论文和新版本、修改元数据、预览、一键发布（`npm run admin`） | 本地 UI |
-| **3. 上线** | 公开仓库 + Vercel + 域名；生成 sitemap、Scholar 标签、RSS | 线上网站 |
+| **3. 上线** | 公开仓库 + Vercel ✅（dongxiv.vercel.app）+ 在线后台 ✅；域名、Scholar 收录待定 | 线上网站 |
 | **4. 增强（可选）** | OpenTimestamps、Internet Archive 自动快照、Zenodo、学科浏览页 | — |
 | **5. 以后再说** | PDF 迁到 Vercel Blob、公开 TeX、HTML 版全文 | — |
 
