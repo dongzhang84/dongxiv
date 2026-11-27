@@ -19,7 +19,7 @@ npm run build    # 构建并校验全站，输出到 .vercel/output/
 
 两种方式，功能一样，写的是同一个仓库：
 
-- **在线后台**：<https://dongxiv.vercel.app/admin/>，用 GitHub 登录，点"发布"直接上线。设置和说明见 [docs/online-admin.md](docs/online-admin.md)。
+- **在线后台**：<https://dongxiv.org/admin/>，用 GitHub 登录，点"发布"直接上线。设置和说明见 [docs/online-admin.md](docs/online-admin.md)。
 - **本地后台**：下面这个，先保存、预览，再一起发布。
 
 ### 本地后台

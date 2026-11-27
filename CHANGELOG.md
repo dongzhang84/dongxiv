@@ -2,6 +2,7 @@
 
 ## 2026-11-27
 
+- **启用域名 dongxiv.org**（Namecheap 注册，DNS 指向 Vercel；www.dongxiv.org 308 跳转到 dongxiv.org）。`baseUrl` 改为 `https://dongxiv.org`：canonical、sitemap、robots.txt、Atom、BibTeX、Google Scholar 标签和 "Cite as" 网址随之更新。GitHub App 的 Homepage 和回调地址也已改为新域名。
 - **首页简介和按学科浏览取消最大宽度**，和 arXiv 一样铺满页面宽度，两段在同一处换行。
 - **首页简介精简为一句**：去掉 SHA-256 和 "not peer-reviewed" 两句（页脚和 About 页仍保留免责说明）。
 - **修正 Midsphere 论文的日期**：发布时日期被存成了 0006-11-23，编号成了 0611.0001；改为 2026-11-23，编号 dongxiv:2611.0001（旧编号刚发布几分钟，没有对外使用）。后台和构建现在会拒绝 2000 年以前的日期。

@@ -1,4 +1,4 @@
-# 在线后台（https://dongxiv.vercel.app/admin/）
+# 在线后台（https://dongxiv.org/admin/）
 
 在网站上直接发布论文：用 GitHub 登录，上传 PDF，填信息，点"发布"。功能和本地后台（`npm run admin`）一样，区别是每次点"发布"就直接提交到 GitHub，不先暂存。Vercel 看到新提交后自动重新构建，大约一两分钟后上线。后台页面会显示上线进度。
 
@@ -13,8 +13,8 @@
 | 项 | 填写 |
 |---|---|
 | GitHub App name | `dongxiv-admin`（必须全 GitHub 唯一，被占用就换一个） |
-| Homepage URL | `https://dongxiv.vercel.app` |
-| Callback URL | `https://dongxiv.vercel.app/api/auth/callback` |
+| Homepage URL | `https://dongxiv.org` |
+| Callback URL | `https://dongxiv.org/api/auth/callback` |
 | Expire user authorization tokens | 保持勾选（令牌 8 小时后失效） |
 | Request user authorization (OAuth) during installation | 不勾 |
 | Webhook → Active | **取消勾选** |
@@ -44,7 +44,7 @@ Vercel → dongxiv 项目 → Settings → Environment Variables，添加：
 
 ### 4. 试一下
 
-打开 <https://dongxiv.vercel.app/admin/>，点"用 GitHub 登录"，授权。看到论文列表就设置好了。
+打开 <https://dongxiv.org/admin/>，点"用 GitHub 登录"，授权。看到论文列表就设置好了。
 
 ## 安全设计
 

@@ -6,7 +6,7 @@ export default {
   // 默认作者名（发布后台会自动填进新论文）
   author: 'Dong Zhang',
   // 部署后的根地址，不带结尾斜杠；用于 BibTeX、RSS、Google Scholar 标签。买了域名后改这里。
-  baseUrl: 'https://dongxiv.vercel.app',
+  baseUrl: 'https://dongxiv.org',
   // true：允许搜索引擎和 Google Scholar 收录；false：全站加 noindex
   indexable: true,
   defaultLicense: 'CC BY 4.0',
