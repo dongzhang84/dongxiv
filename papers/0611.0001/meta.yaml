@@ -1,0 +1,18 @@
+title: Eleven Theorems on the Tetrahedron with a Midsphere
+authors:
+  - Dong Zhang
+abstract: A tetrahedron has a midsphere, a sphere tangent to all six edges, if and only if its vertices are the centres of four mutually externally tangent balls. We present eleven new theorems on such tetrahedra, none of which holds for a general tetrahedron. For example, the centroid, the circumcentre, the symmedian point, the centre of the midsphere and the Zeeman point lie in one plane. Eight points of tangency, four between the balls and four between the balls and their two Soddy spheres, lie on one sphere, which may degenerate to a plane. A sphere through the point of tangency of two balls that is orthogonal to both Soddy spheres also passes through the point of tangency on the opposite edge. For a Soddy sphere and a pair of opposite edges, the Zeeman point, the inverse of the centre of the midsphere in the Soddy sphere, the midpoint of the chord joining the points of tangency on the two edges, and the two points where the Soddy sphere touches the balls at the ends of one of these edges lie on one sphere. When the Fermat–Torricelli point is not a vertex, it is collinear with its isogonal conjugate and the centre of the midsphere. We found these relations by searching for collinear, coplanar, concyclic and cospherical configurations among 1,490 special points. The proofs use tangent-length coordinates, inversion at points of tangency and exact symbolic computation. For the Fermat collinearity we give an explicit certificate that can be checked independently.
+comments: 21 pages, 13 figures, 2 tables
+primary_subject: Metric Geometry
+formal:
+  system: Lean 4 + Mathlib
+  scope: all 11 theorems (20 formal statements)
+  url: https://github.com/dongzhang84/geometry-research/tree/61c9a573b57a6a549220a40d73993d8c6ac142bc/lean/GeometryResearch/Midsphere
+vibe:
+  agents:
+    - Claude Code
+versions:
+  - date: 0006-11-23
+    file: v1.pdf
+    sha256: 76f1f3bc098b8e363f443da532e55bcbd34e280af38ff3546c98905ecce874e1
+    pages: 21
