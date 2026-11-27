@@ -23,10 +23,10 @@ export class GitHub {
       body: body ? JSON.stringify(body) : undefined,
       cache: 'no-store',
     });
-    if (r.status === 401) { const e = new Error('登录已过期，请重新登录'); e.auth = true; throw e; }
+    if (r.status === 401) { const e = new Error('Your session has expired. Please sign in again.'); e.auth = true; throw e; }
     if (!r.ok) {
       const j = await r.json().catch(() => ({}));
-      const e = new Error(`GitHub 返回 ${r.status}：${j.message || r.statusText}`);
+      const e = new Error(`GitHub returned ${r.status}: ${j.message || r.statusText}`);
       e.status = r.status;
       throw e;
     }
@@ -41,7 +41,7 @@ export class GitHub {
     const ref = await this.req('GET', `/repos/${this.repo}/git/ref/heads/${this.branch}`);
     const head = ref.object.sha;
     const tree = await this.req('GET', `/repos/${this.repo}/git/trees/${head}?recursive=1`);
-    if (tree.truncated) fail('仓库文件太多，GitHub 没有返回完整列表');
+    if (tree.truncated) fail('The repository has too many files; GitHub returned an incomplete list.');
     const ids = [...new Set(tree.tree
       .map((e) => /^papers\/([^/]+)\/meta\.yaml$/.exec(e.path)?.[1])
       .filter((id) => id && ID_RE.test(id)))];
@@ -76,7 +76,7 @@ export class GitHub {
     try {
       await this.req('PATCH', `/repos/${this.repo}/git/refs/heads/${this.branch}`, { sha: c.sha, force: false });
     } catch (e) {
-      if (e.status === 422) fail('仓库在这期间被别处改过（比如本地后台刚发布过）。刷新页面后再试一次。');
+      if (e.status === 422) fail('The repository changed in the meantime (for example, a publish from the local admin). Reload the page and try again.');
       throw e;
     }
     return c.sha;

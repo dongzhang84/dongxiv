@@ -12,7 +12,7 @@ export const GET: APIRoute = async ({ url, cookies, redirect }) => {
   const state = cookies.get('dx_oauth_state')?.value;
   cookies.delete('dx_oauth_state', { path: '/api/auth/' });
   const code = url.searchParams.get('code');
-  if (!code || !state || url.searchParams.get('state') !== state) return back('登录已过期，请重试');
+  if (!code || !state || url.searchParams.get('state') !== state) return back('Sign-in expired. Please try again.');
 
   const r = await fetch('https://github.com/login/oauth/access_token', {
     method: 'POST',
@@ -25,13 +25,13 @@ export const GET: APIRoute = async ({ url, cookies, redirect }) => {
     }),
   });
   const tok = await r.json().catch(() => ({}));
-  if (!tok.access_token) return back(`GitHub 没有给出令牌：${tok.error_description || tok.error || r.status}`);
+  if (!tok.access_token) return back(`GitHub did not return a token: ${tok.error_description || tok.error || r.status}`);
 
   const u = await fetch('https://api.github.com/user', {
     headers: { Authorization: `Bearer ${tok.access_token}`, Accept: 'application/vnd.github+json', 'User-Agent': 'dongxiv-admin' },
   });
   const user = await u.json().catch(() => ({}));
-  if (String(user.login ?? '').toLowerCase() !== OWNER) return back(`只有 ${OWNER} 可以使用后台`);
+  if (String(user.login ?? '').toLowerCase() !== OWNER) return back(`Only ${OWNER} can use this admin.`);
 
   // 不设 httpOnly：后台页面要在浏览器里直接调用 GitHub API（PDF 不经过 Vercel，没有 4.5 MB 限制）
   cookies.set('dx_gh', tok.access_token, {

@@ -14,9 +14,9 @@ export const todayUTC = () => new Date().toISOString().slice(0, 10);
 
 /** 选今天就记下当前精确时间；选以前的日期（补录）就只记日期，不编造时刻。 */
 export function normalizeDate(d) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(d ?? '')) fail('日期格式应为 YYYY-MM-DD');
-  if (Number.isNaN(Date.parse(d))) fail('日期无效');
-  if (d > todayUTC()) fail('日期不能晚于今天');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d ?? '')) fail('Date must be in YYYY-MM-DD format.');
+  if (Number.isNaN(Date.parse(d))) fail('Invalid date.');
+  if (d > todayUTC()) fail('The date cannot be later than today.');
   return d === todayUTC() ? new Date().toISOString().replace(/\.\d+Z$/, 'Z') : d;
 }
 
@@ -25,10 +25,10 @@ export function nextId(papers, date) {
   const yymm = date.slice(2, 4) + date.slice(5, 7);
   const same = papers.filter((p) => p.id.startsWith(yymm + '.'));
   const n = same.reduce((m, p) => Math.max(m, Number(p.id.slice(5))), 0) + 1;
-  if (n > 9999) fail('这个月的编号已经用完');
+  if (n > 9999) fail('No identifiers left for this month.');
   const later = same.filter((p) => String(p.meta.versions?.[0]?.date ?? '').slice(0, 10) > date.slice(0, 10));
   const warning = later.length
-    ? `同一个月里已有更晚发布的论文（${later.map((p) => p.id).join(', ')}），新论文的编号会排在它们后面。`
+    ? `This month already has papers with a later date (${later.map((p) => p.id).join(', ')}); the new paper will be numbered after them.`
     : '';
   return { id: `${yymm}.${String(n).padStart(4, '0')}`, warning };
 }
@@ -40,7 +40,7 @@ function cleanLinks(a, what) {
     .map((l) => ({ label: clean(l?.label), url: clean(l?.url) }))
     .filter((l) => l.label || l.url)
     .map((l) => {
-      if (!l.label || !/^https?:\/\/\S+$/.test(l.url)) fail(`${what}：每条都要有名称和以 http(s):// 开头的网址`);
+      if (!l.label || !/^https?:\/\/\S+$/.test(l.url)) fail(`${what}: each entry needs a label and a URL starting with http(s)://`);
       return l;
     });
 }
@@ -48,20 +48,20 @@ function cleanLinks(a, what) {
 /** 表单内容 → meta.yaml 的字段（不含 versions），顺序固定，空字段省略。 */
 export function buildMeta(f, defaultLicense) {
   const m = {};
-  m.title = clean(f.title) || fail('标题不能为空');
+  m.title = clean(f.title) || fail('Title is required.');
   m.authors = cleanList(f.authors);
-  if (!m.authors.length) fail('至少要有一位作者');
-  m.abstract = clean(f.abstract) || fail('摘要不能为空');
+  if (!m.authors.length) fail('At least one author is required.');
+  m.abstract = clean(f.abstract) || fail('Abstract is required.');
   if (clean(f.comments)) m.comments = clean(f.comments);
   m.primary_subject = clean(f.primary_subject);
-  if (!SUBJECT_NAMES.has(m.primary_subject)) fail(`主学科 "${m.primary_subject}" 不是 arXiv 的分类名，请从下拉列表里选`);
+  if (!SUBJECT_NAMES.has(m.primary_subject)) fail(`Primary subject "${m.primary_subject}" is not an arXiv category name. Pick one from the list.`);
   const subjects = [...new Set(cleanList(f.subjects))].filter((s) => s !== m.primary_subject);
-  for (const s of subjects) if (!SUBJECT_NAMES.has(s)) fail(`交叉学科 "${s}" 不是 arXiv 的分类名`);
+  for (const s of subjects) if (!SUBJECT_NAMES.has(s)) fail(`Cross-list subject "${s}" is not an arXiv category name.`);
   if (subjects.length) m.subjects = subjects;
   const keywords = cleanList(f.keywords);
   if (keywords.length) m.keywords = keywords;
   if (clean(f.license) && clean(f.license) !== defaultLicense) m.license = clean(f.license);
-  const links = cleanLinks(f.links, '链接');
+  const links = cleanLinks(f.links, 'Links');
   if (links.length) m.links = links;
   if (clean(f.withdrawn)) m.withdrawn = clean(f.withdrawn);
 
@@ -71,7 +71,7 @@ export function buildMeta(f, defaultLicense) {
   if (cleanList(v.agents).length) vibe.agents = cleanList(v.agents);
   if (cleanList(v.models).length) vibe.models = cleanList(v.models);
   for (const k of ['machine_verified', 'human_verified', 'formal_verified']) if (TRI.has(v[k])) vibe[k] = v[k];
-  const materials = cleanLinks(v.materials, '材料');
+  const materials = cleanLinks(v.materials, 'Materials');
   if (materials.length) vibe.materials = materials;
   if (clean(v.notes)) vibe.notes = clean(v.notes);
   if (Object.keys(vibe).length) m.vibe = vibe;

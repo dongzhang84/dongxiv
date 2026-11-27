@@ -49,7 +49,7 @@ function watchDeploy(sha, label, url) {
   const started = Date.now();
   const stamp = ++watchToken;
   const show = (cls, html) => { if (stamp === watchToken) { bar.className = `msg ${cls}`; bar.innerHTML = html; bar.hidden = false; } };
-  show('warn', `已提交 ${esc(label)}，Vercel 正在构建，通常一两分钟后上线…`);
+  show('warn', `Committed ${esc(label)}. Vercel is building; it is usually live within a minute or two…`);
   clearInterval(watching);
   watching = setInterval(async () => {
     try {
@@ -57,13 +57,13 @@ function watchDeploy(sha, label, url) {
       const j = await r.json();
       if (j.commit === sha) {
         clearInterval(watching);
-        show('ok', `✓ ${esc(label)} 已上线：<a href="${esc(url)}" target="_blank" rel="noopener">${esc(location.origin + url)}</a>`);
+        show('ok', `✓ ${esc(label)} is live: <a href="${esc(url)}" target="_blank" rel="noopener">${esc(location.origin + url)}</a>`);
         return;
       }
     } catch {}
     if (Date.now() - started > 6 * 60 * 1000) {
       clearInterval(watching);
-      show('err', `${esc(label)} 已提交到 GitHub，但 6 分钟后线上还没更新。可能构建失败了，去 Vercel 的 Deployments 页面看一下。构建失败时网站保持原样。`);
+      show('err', `${esc(label)} was committed to GitHub, but the site has not updated after 6 minutes. The build may have failed; check Deployments on Vercel. If a build fails, the site stays as it was.`);
     }
   }, 6000);
 }
@@ -73,10 +73,10 @@ let watchToken = 0;
 function viewLogin(msg) {
   $('#who').innerHTML = '';
   app().innerHTML = `<div class="card login">
-    <h1>dongxiv 发布后台</h1>
-    <p>用 GitHub 登录后，可以在这里上传 PDF 发布论文、发新版本、修改信息。只有仓库主人能登录。</p>
+    <h1>dongxiv admin</h1>
+    <p>Sign in with GitHub to upload PDFs, publish papers and new versions, and edit paper information. Only the repository owner can sign in.</p>
     ${msg ? `<div class="msg err">${esc(msg)}</div>` : ''}
-    <a class="btn" href="/api/auth/login">用 GitHub 登录</a></div>`;
+    <a class="btn" href="/api/auth/login">Sign in with GitHub</a></div>`;
 }
 
 async function boot() {
@@ -89,16 +89,16 @@ async function boot() {
     const [me, repo] = await Promise.all([gh.user(), gh.repoInfo()]);
     if (!repo.permissions?.push) {
       clearToken();
-      return viewLogin(`${me.login} 没有 ${SITE.repo} 的写权限。请确认 GitHub App 已安装到这个仓库。`);
+      return viewLogin(`${me.login} does not have write access to ${SITE.repo}. Make sure the GitHub App is installed on this repository.`);
     }
     S = { me };
     flag(true);
-    $('#who').innerHTML = `${esc(me.login)} · <button class="link light" id="logout">退出</button>`;
+    $('#who').innerHTML = `${esc(me.login)} · <button class="link light" id="logout">Sign out</button>`;
     $('#logout').onclick = () => { clearToken(); flag(false); location.href = '/admin/'; };
     window.addEventListener('hashchange', route);
     await route();
   } catch (e) {
-    if (e.auth) { clearToken(); return viewLogin('登录已过期，请重新登录'); }
+    if (e.auth) { clearToken(); return viewLogin('Your session has expired. Please sign in again.'); }
     app().innerHTML = `<div class="msg err">${esc(e.message)}</div>`;
   }
 }
@@ -112,31 +112,31 @@ async function refresh() {
 // ---------- 论文列表 ----------
 function viewList() {
   const rows = S.papers.map((p) => {
-    if (p.error) return `<tr><td>${esc(p.id)}</td><td colspan="3" class="msg err">meta.yaml 读取失败：${esc(p.error)}</td></tr>`;
+    if (p.error) return `<tr><td>${esc(p.id)}</td><td colspan="3" class="msg err">Could not read meta.yaml: ${esc(p.error)}</td></tr>`;
     const vs = p.meta.versions ?? [];
     return `<tr>
       <td><span class="idbox">${esc(SITE.name)}:${esc(p.id)}</span></td>
-      <td><div class="t-title">${esc(p.meta.title)}</div><div class="muted">${esc((p.meta.authors || []).join(', '))} · ${esc(p.meta.primary_subject)}${p.meta.withdrawn ? ' · <b>已撤稿</b>' : ''}</div></td>
+      <td><div class="t-title">${esc(p.meta.title)}</div><div class="muted">${esc((p.meta.authors || []).join(', '))} · ${esc(p.meta.primary_subject)}${p.meta.withdrawn ? ' · <b>withdrawn</b>' : ''}</div></td>
       <td class="vers">${vs.map((v, i) => `v${i + 1} <span class="muted">${esc(String(v.date).slice(0, 10))}</span>`).join('<br>')}</td>
       <td class="actions">
-        <a href="/abs/${esc(p.id)}/" target="_blank" rel="noopener">查看</a>
-        <a href="#/version/${esc(p.id)}">发新版本</a>
-        <a href="#/edit/${esc(p.id)}">修改信息</a>
+        <a href="/abs/${esc(p.id)}/" target="_blank" rel="noopener">View</a>
+        <a href="#/version/${esc(p.id)}">New version</a>
+        <a href="#/edit/${esc(p.id)}">Edit info</a>
       </td></tr>`;
   }).join('');
   app().innerHTML = `
-    <h1>论文</h1>
-    ${S.papers.length ? `<table class="papers"><thead><tr><th>编号</th><th>标题</th><th>版本</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table>`
-      : '<div class="card">还没有论文。点右上角 <a href="#/new">+ 新论文</a> 开始。</div>'}
-    <p class="muted">已发布的 PDF 不能替换或删除，只能发新版本；要撤稿，在"修改信息"里填撤稿说明。</p>`;
+    <h1>Papers</h1>
+    ${S.papers.length ? `<table class="papers"><thead><tr><th>Identifier</th><th>Title</th><th>Versions</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table>`
+      : '<div class="card">No papers yet. Click <a href="#/new">+ New paper</a> to start.</div>'}
+    <p class="muted">Published PDFs cannot be replaced or deleted; post a new version instead. To withdraw a paper, add a withdrawal note under "Edit info".</p>`;
 }
 
 // ---------- 表单部件 ----------
 function multiRows(name, values, kind) {
   const row = (v) => kind === 'link'
-    ? `<div><input placeholder="名称，如 Code" data-k="label" value="${esc(v?.label)}"><input placeholder="https://…" data-k="url" value="${esc(v?.url)}"><button type="button" class="link danger" data-rm>删除</button></div>`
-    : `<div><input list="subject-list" placeholder="输入关键字选择分类" value="${esc(v)}"><button type="button" class="link danger" data-rm>删除</button></div>`;
-  return `<div class="multi" data-multi="${name}" data-kind="${kind}">${(values || []).map(row).join('')}<button type="button" class="link" data-add>+ 添加</button></div>`;
+    ? `<div><input placeholder="Label, e.g. Code" data-k="label" value="${esc(v?.label)}"><input placeholder="https://…" data-k="url" value="${esc(v?.url)}"><button type="button" class="link danger" data-rm>Remove</button></div>`
+    : `<div><input list="subject-list" placeholder="Type to pick a category" value="${esc(v)}"><button type="button" class="link danger" data-rm>Remove</button></div>`;
+  return `<div class="multi" data-multi="${name}" data-kind="${kind}">${(values || []).map(row).join('')}<button type="button" class="link" data-add>+ Add</button></div>`;
 }
 function wireMulti(root) {
   root.querySelectorAll('[data-multi]').forEach((box) => {
@@ -157,32 +157,32 @@ function readMulti(root, name) {
     : d.querySelector('input').value).filter((v) => typeof v === 'string' ? v.trim() : (v.label.trim() || v.url.trim()));
 }
 const triSelect = (name, val) => `<select name="${name}">
-  ${[['', '未说明'], ['yes', '是'], ['partial', '部分'], ['no', '否']].map(([v, t]) => `<option value="${v}" ${val === v ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
+  ${[['', 'Not stated'], ['yes', 'Yes'], ['partial', 'Partly'], ['no', 'No']].map(([v, t]) => `<option value="${v}" ${val === v ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
 
 function metaFields(m, { withdrawn = false } = {}) {
   const v = m.vibe || {};
   return `
-  <div class="row"><label>标题</label><div><input name="title" value="${esc(m.title)}"><div class="preview" data-prev="title"></div></div></div>
-  <div class="row"><label>作者</label><div><input name="authors" value="${esc((m.authors || [SITE.author]).join(', '))}"><div class="hint">多位作者用英文逗号分隔</div></div></div>
-  <div class="row"><label>摘要</label><div><textarea name="abstract">${esc(m.abstract)}</textarea>
-    <div class="hint">公式写成 $x^2$ 或 $$…$$；空一行分段。下面是预览：</div><div class="preview" data-prev="abstract"></div></div></div>
-  <div class="row"><label>Comments</label><div><input name="comments" value="${esc(m.comments)}"><div class="hint" id="comments-hint">例如 9 pages, 2 figures, 3 tables。自动预填只统计带 “Figure N / Table N” 标题的图表，附录里没标题的表格要自己数一下。</div></div></div>
-  <div class="row"><label>主学科</label><div><input name="primary_subject" list="subject-list" value="${esc(m.primary_subject)}" placeholder="输入关键字选择 arXiv 分类"></div></div>
-  <div class="row"><label>交叉学科</label><div>${multiRows('subjects', m.subjects, 'subject')}</div></div>
-  <div class="row"><label>关键词</label><div><input name="keywords" value="${esc((m.keywords || []).join(', '))}"><div class="hint">选填，英文逗号分隔</div></div></div>
-  <div class="row"><label>许可证</label><div><input name="license" value="${esc(m.license || SITE.defaultLicense)}"></div></div>
-  <div class="row"><label>链接</label><div>${multiRows('links', m.links, 'link')}<div class="hint">选填，例如代码仓库</div></div></div>
-  <h2>AI 参与（选填，不填就不显示）</h2>
-  <div class="row"><label>AI 工具</label><div><input name="agents" value="${esc((v.agents || []).join(', '))}" placeholder="例如 Claude Code"></div></div>
-  <div class="row"><label>模型</label><div><input name="models" value="${esc((v.models || []).join(', '))}" placeholder="例如 Claude Opus 5.5"></div></div>
-  <div class="row"><label>你的角色</label><div><input name="human_role" value="${esc(v.human_role)}" placeholder="例如 Problem, key ideas, checking of all derivations"></div></div>
+  <div class="row"><label>Title</label><div><input name="title" value="${esc(m.title)}"><div class="preview" data-prev="title"></div></div></div>
+  <div class="row"><label>Authors</label><div><input name="authors" value="${esc((m.authors || [SITE.author]).join(', '))}"><div class="hint">Separate multiple authors with commas</div></div></div>
+  <div class="row"><label>Abstract</label><div><textarea name="abstract">${esc(m.abstract)}</textarea>
+    <div class="hint">Write math as $x^2$ or $$…$$; leave a blank line between paragraphs. Preview:</div><div class="preview" data-prev="abstract"></div></div></div>
+  <div class="row"><label>Comments</label><div><input name="comments" value="${esc(m.comments)}"><div class="hint" id="comments-hint">e.g. 9 pages, 2 figures, 3 tables. The prefill only counts figures and tables with a “Figure N / Table N” caption; count uncaptioned ones yourself.</div></div></div>
+  <div class="row"><label>Primary subject</label><div><input name="primary_subject" list="subject-list" value="${esc(m.primary_subject)}" placeholder="Type to pick an arXiv category"></div></div>
+  <div class="row"><label>Cross-lists</label><div>${multiRows('subjects', m.subjects, 'subject')}</div></div>
+  <div class="row"><label>Keywords</label><div><input name="keywords" value="${esc((m.keywords || []).join(', '))}"><div class="hint">Optional, comma-separated</div></div></div>
+  <div class="row"><label>License</label><div><input name="license" value="${esc(m.license || SITE.defaultLicense)}"></div></div>
+  <div class="row"><label>Links</label><div>${multiRows('links', m.links, 'link')}<div class="hint">Optional, e.g. a code repository</div></div></div>
+  <h2>AI involvement (optional; hidden if empty)</h2>
+  <div class="row"><label>AI tools</label><div><input name="agents" value="${esc((v.agents || []).join(', '))}" placeholder="e.g. Claude Code"></div></div>
+  <div class="row"><label>Models</label><div><input name="models" value="${esc((v.models || []).join(', '))}" placeholder="e.g. Claude Opus 5.5"></div></div>
+  <div class="row"><label>Author's role</label><div><input name="human_role" value="${esc(v.human_role)}" placeholder="e.g. Problem, key ideas, checking of all derivations"></div></div>
   <div class="row"><label>Checking</label><div class="tri">
-    <label>AI 检查 ${triSelect('machine_verified', v.machine_verified)}</label>
-    <label>本人检查 ${triSelect('human_verified', v.human_verified)}</label>
-    <label>形式化验证 ${triSelect('formal_verified', v.formal_verified)}</label></div></div>
-  <div class="row"><label>材料</label><div>${multiRows('materials', v.materials, 'link')}<div class="hint">代码、数据、对话记录等</div></div></div>
-  <div class="row"><label>AI 备注</label><div><input name="notes" value="${esc(v.notes)}"></div></div>
-  ${withdrawn ? `<h2>撤稿</h2><div class="row"><label>撤稿说明</label><div><input name="withdrawn" value="${esc(m.withdrawn)}"><div class="hint">填了就表示撤稿；论文页面和编号保留</div></div></div>` : ''}`;
+    <label>Checked by AI ${triSelect('machine_verified', v.machine_verified)}</label>
+    <label>Checked by author ${triSelect('human_verified', v.human_verified)}</label>
+    <label>Formally verified ${triSelect('formal_verified', v.formal_verified)}</label></div></div>
+  <div class="row"><label>Materials</label><div>${multiRows('materials', v.materials, 'link')}<div class="hint">Code, data, AI session logs, etc.</div></div></div>
+  <div class="row"><label>AI notes</label><div><input name="notes" value="${esc(v.notes)}"></div></div>
+  ${withdrawn ? `<h2>Withdrawal</h2><div class="row"><label>Withdrawal note</label><div><input name="withdrawn" value="${esc(m.withdrawn)}"><div class="hint">Filling this in withdraws the paper; its page and identifier stay</div></div></div>` : ''}`;
 }
 function wirePreviews(root) {
   root.querySelectorAll('[data-prev]').forEach((p) => {
@@ -209,23 +209,23 @@ function readMeta(root) {
 // PDF 拖放区：在浏览器里读取，计算 SHA-256，自动提取信息。文件在点"发布"之前不会离开浏览器。
 function dropZone(onDone) {
   const box = document.createElement('div');
-  box.innerHTML = `<div class="drop"><div class="big">把 PDF 拖到这里，或点击选择文件</div><div class="muted">点"发布"之前，文件不会离开你的浏览器</div><input type="file" accept="application/pdf,.pdf" hidden></div><div class="pdfinfo"></div>`;
+  box.innerHTML = `<div class="drop"><div class="big">Drop a PDF here, or click to choose a file</div><div class="muted">The file stays in your browser until you click Publish</div><input type="file" accept="application/pdf,.pdf" hidden></div><div class="pdfinfo"></div>`;
   const drop = box.querySelector('.drop'), input = box.querySelector('input'), info = box.querySelector('.pdfinfo');
   const handle = async (file) => {
     if (!file) return;
-    info.innerHTML = `<span class="muted">正在读取 ${esc(file.name)}…</span>`;
+    info.innerHTML = `<span class="muted">Reading ${esc(file.name)}…</span>`;
     try {
-      if (file.size > MAX_PDF) throw new Error(`文件太大（上限 ${MAX_PDF / 1024 / 1024} MB）`);
+      if (file.size > MAX_PDF) throw new Error(`File too large (limit ${MAX_PDF / 1024 / 1024} MB)`);
       const bytes = new Uint8Array(await file.arrayBuffer());
-      if (String.fromCharCode(...bytes.subarray(0, 5)) !== '%PDF-') throw new Error('这不是 PDF 文件');
+      if (String.fromCharCode(...bytes.subarray(0, 5)) !== '%PDF-') throw new Error('This is not a PDF file');
       const hash = await sha256(bytes);
       const dup = [];
       for (const p of S.papers) (p.meta?.versions ?? []).forEach((v, i) => { if (v.sha256 === hash) dup.push(`${p.id}v${i + 1}`); });
       let a = {};
-      try { a = await analyzePdf(await pdfjs(), bytes); } catch (e) { console.warn('PDF 自动提取失败', e); }
+      try { a = await analyzePdf(await pdfjs(), bytes); } catch (e) { console.warn('PDF auto-extraction failed', e); }
       const r = { bytes, sha256: hash, size: bytes.length, ...a };
-      info.innerHTML = `<div class="msg ok">✓ ${esc(file.name)} · ${r.pages ?? '?'} 页 · ${(r.size / 1024).toFixed(0)} KB<br><span class="muted">SHA-256</span> <code>${r.sha256}</code></div>
-        ${dup.length ? `<div class="msg warn">这个 PDF 和已有的 ${esc(dup.join(', '))} 完全相同。</div>` : ''}`;
+      info.innerHTML = `<div class="msg ok">✓ ${esc(file.name)} · ${r.pages ?? '?'} pages · ${(r.size / 1024).toFixed(0)} KB<br><span class="muted">SHA-256</span> <code>${r.sha256}</code></div>
+        ${dup.length ? `<div class="msg warn">This PDF is identical to ${esc(dup.join(', '))}.</div>` : ''}`;
       onDone(r);
     } catch (e) { info.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
   };
@@ -239,30 +239,30 @@ function dropZone(onDone) {
 
 async function submit(btn, msgEl, fn) {
   const label = btn.textContent;
-  btn.disabled = true; btn.textContent = '发布中…'; msgEl.innerHTML = '';
+  btn.disabled = true; btn.textContent = 'Publishing…'; msgEl.innerHTML = '';
   try { await fn(); } catch (e) {
-    if (e.auth) { clearToken(); return viewLogin('登录已过期，请重新登录（表单内容需要重新填写）'); }
+    if (e.auth) { clearToken(); return viewLogin('Your session has expired. Please sign in again (the form will need to be filled in again).'); }
     msgEl.innerHTML = `<div class="msg err">${esc(e.message)}</div>`;
     btn.disabled = false; btn.textContent = label;
   }
 }
-const CONFIRM = '确定发布？仓库和网站都是公开的，提交后任何人都能看到，已发布的 PDF 不能撤回。';
+const CONFIRM = 'Publish now? The repository and the site are public: anyone will see this, and a published PDF cannot be taken back.';
 
 // ---------- 新论文 ----------
 function viewNew() {
   let upload = null;
   const today = todayUTC();
-  app().innerHTML = `<h1>新论文</h1>
-    <div class="card"><h2 style="margin-top:0">1. PDF（第一版）</h2><div id="dz"></div></div>
+  app().innerHTML = `<h1>New paper</h1>
+    <div class="card"><h2 style="margin-top:0">1. PDF (first version)</h2><div id="dz"></div></div>
     <form class="card" id="f" autocomplete="off">
-      <h2 style="margin-top:0">2. 发布日期和编号</h2>
-      <div class="row"><label>发布日期</label><div><input type="date" name="date" value="${today}" max="${today}">
-        <div class="hint">日期按 UTC 计算（编号也按 UTC 的年月）。默认今天，会记录精确时间；补录以前的论文就选当时的日期，页面上只显示日期。</div></div></div>
-      <div class="row"><label>编号</label><div><span class="idbox" id="newid">…</span><div id="idwarn"></div></div></div>
-      <h2>3. 论文信息</h2>
+      <h2 style="margin-top:0">2. Date and identifier</h2>
+      <div class="row"><label>Date</label><div><input type="date" name="date" value="${today}" max="${today}">
+        <div class="hint">Dates are in UTC (the identifier uses the UTC year and month). Today records the exact time; for an older paper, pick its original date and only the date is shown.</div></div></div>
+      <div class="row"><label>Identifier</label><div><span class="idbox" id="newid">…</span><div id="idwarn"></div></div></div>
+      <h2>3. Paper information</h2>
       ${metaFields({})}
       <div id="msg"></div>
-      <button class="btn" id="save" type="submit">发布</button>
+      <button class="btn" id="save" type="submit">Publish</button>
     </form>`;
   const f = $('#f');
   wireMulti(f); wirePreviews(f);
@@ -282,10 +282,10 @@ function viewNew() {
   };
   f.date.onchange = updId; updId();
   f.onsubmit = (e) => { e.preventDefault(); submit($('#save'), $('#msg'), async () => {
-    if (!upload) throw new Error('请先在上面放入 PDF');
+    if (!upload) throw new Error('Add a PDF above first');
     const meta = buildMeta(readMeta(f), SITE.defaultLicense);
     const entry = versionEntry({ date: f.date.value, sha256: upload.sha256, pages: upload.pages }, 1);
-    if (!confirm(CONFIRM)) throw new Error('已取消，没有发布');
+    if (!confirm(CONFIRM)) throw new Error('Cancelled; nothing was published');
     await refresh(); // 用最新的仓库状态分配编号
     const { id } = nextId(S.papers.filter((p) => p.meta), entry.date.slice(0, 10));
     const sha = await gh.commit(S.head, [
@@ -300,38 +300,38 @@ function viewNew() {
 // ---------- 新版本 ----------
 function viewVersion(id) {
   const p = S.papers.find((x) => x.id === id && x.meta);
-  if (!p) return (app().innerHTML = '<div class="msg err">没有这篇论文</div>');
+  if (!p) return (app().innerHTML = '<div class="msg err">No such paper</div>');
   const vs = p.meta.versions;
   const n = vs.length + 1;
   const prev = String(vs[n - 2].date);
   const today = todayUTC();
   let upload = null;
-  app().innerHTML = `<h1>发新版本：${esc(SITE.name)}:${esc(id)}v${n}</h1>
-    <p class="muted">${esc(p.meta.title)} · 当前最新 v${n - 1}（${esc(prev.slice(0, 10))}）。已发布的 PDF 不会被替换。</p>
-    <div class="card"><h2 style="margin-top:0">1. 新 PDF</h2><div id="dz"></div></div>
+  app().innerHTML = `<h1>New version: ${esc(SITE.name)}:${esc(id)}v${n}</h1>
+    <p class="muted">${esc(p.meta.title)} · latest is v${n - 1} (${esc(prev.slice(0, 10))}). Published PDFs are never replaced.</p>
+    <div class="card"><h2 style="margin-top:0">1. New PDF</h2><div id="dz"></div></div>
     <form class="card" id="f" autocomplete="off">
-      <h2 style="margin-top:0">2. 版本信息</h2>
-      <div class="row"><label>发布日期</label><div><input type="date" name="date" value="${today}" max="${today}"><div class="hint">按 UTC 计算，必须晚于 v${n - 1}</div></div></div>
-      <div class="row"><label>修改说明</label><div><input name="note" placeholder="例如 Added Section 4 and fixed a sign error in (3.2)"><div class="hint">选填，显示在版本历史里</div></div></div>
-      <details id="metabox"><summary>同时修改论文信息（标题、摘要、Comments 等以最新版本为准）</summary>${metaFields(p.meta, { withdrawn: true })}</details>
+      <h2 style="margin-top:0">2. Version details</h2>
+      <div class="row"><label>Date</label><div><input type="date" name="date" value="${today}" max="${today}"><div class="hint">In UTC; must be later than v${n - 1}</div></div></div>
+      <div class="row"><label>Change note</label><div><input name="note" placeholder="e.g. Added Section 4 and fixed a sign error in (3.2)"><div class="hint">Optional; shown in the version history</div></div></div>
+      <details id="metabox"><summary>Also edit paper information (title, abstract, Comments, etc. follow the latest version)</summary>${metaFields(p.meta, { withdrawn: true })}</details>
       <div id="msg"></div>
-      <button class="btn" id="save" type="submit">发布 v${n}</button>
+      <button class="btn" id="save" type="submit">Publish v${n}</button>
     </form>`;
   const f = $('#f');
   wireMulti(f); wirePreviews(f);
   $('#dz').append(dropZone((r) => {
     upload = r;
     if (r.comments && r.comments !== f.comments.value) {
-      $('#comments-hint').innerHTML = `新 PDF 读出来是 <b>${esc(r.comments)}</b> · <button type="button" class="link" id="usec">用这个</button>`;
+      $('#comments-hint').innerHTML = `The new PDF reads as <b>${esc(r.comments)}</b> · <button type="button" class="link" id="usec">Use this</button>`;
       $('#usec').onclick = () => { f.comments.value = r.comments; $('#metabox').open = true; };
     }
   }));
   f.onsubmit = (e) => { e.preventDefault(); submit($('#save'), $('#msg'), async () => {
-    if (!upload) throw new Error('请先在上面放入新 PDF');
+    if (!upload) throw new Error('Add the new PDF above first');
     const meta = buildMeta(readMeta(f), SITE.defaultLicense);
     const entry = versionEntry({ date: f.date.value, sha256: upload.sha256, pages: upload.pages, note: f.note.value }, n);
-    if (Date.parse(entry.date) <= Date.parse(prev)) throw new Error(`新版本的日期必须晚于 v${n - 1}（${prev.slice(0, 10)}）`);
-    if (!confirm(CONFIRM)) throw new Error('已取消，没有发布');
+    if (Date.parse(entry.date) <= Date.parse(prev)) throw new Error(`The new version's date must be later than v${n - 1} (${prev.slice(0, 10)})`);
+    if (!confirm(CONFIRM)) throw new Error('Cancelled; nothing was published');
     const sha = await gh.commit(S.head, [
       { path: `papers/${id}/v${n}.pdf`, bytes: upload.bytes },
       { path: `papers/${id}/meta.yaml`, text: yaml({ ...meta, versions: [...vs, entry] }) },
@@ -344,19 +344,19 @@ function viewVersion(id) {
 // ---------- 修改信息 ----------
 function viewEdit(id) {
   const p = S.papers.find((x) => x.id === id && x.meta);
-  if (!p) return (app().innerHTML = '<div class="msg err">没有这篇论文</div>');
-  app().innerHTML = `<h1>修改信息：${esc(SITE.name)}:${esc(id)}</h1>
-    <p class="muted">只改文字信息，PDF 和版本历史不变。要换 PDF 请 <a href="#/version/${esc(id)}">发新版本</a>。</p>
+  if (!p) return (app().innerHTML = '<div class="msg err">No such paper</div>');
+  app().innerHTML = `<h1>Edit info: ${esc(SITE.name)}:${esc(id)}</h1>
+    <p class="muted">Changes text information only; PDFs and version history stay the same. To change the PDF, post a <a href="#/version/${esc(id)}">new version</a>.</p>
     <form class="card" id="f" autocomplete="off">${metaFields(p.meta, { withdrawn: true })}
-      <div id="msg"></div><button class="btn" id="save" type="submit">发布修改</button></form>`;
+      <div id="msg"></div><button class="btn" id="save" type="submit">Publish changes</button></form>`;
   const f = $('#f');
   wireMulti(f); wirePreviews(f);
   f.onsubmit = (e) => { e.preventDefault(); submit($('#save'), $('#msg'), async () => {
     const text = yaml({ ...buildMeta(readMeta(f), SITE.defaultLicense), versions: p.meta.versions });
-    if (text === yaml(p.meta)) throw new Error('没有改动');
-    if (!confirm(CONFIRM)) throw new Error('已取消，没有发布');
+    if (text === yaml(p.meta)) throw new Error('Nothing has changed');
+    if (!confirm(CONFIRM)) throw new Error('Cancelled; nothing was published');
     const sha = await gh.commit(S.head, [{ path: `papers/${id}/meta.yaml`, text }], `Update ${SITE.name}:${id}`);
-    watchDeploy(sha, `${SITE.name}:${id} 的修改`, `/abs/${id}/`);
+    watchDeploy(sha, `changes to ${SITE.name}:${id}`, `/abs/${id}/`);
     await refresh(); location.hash = '#/';
   }); };
 }
@@ -364,8 +364,8 @@ function viewEdit(id) {
 // ---------- 路由 ----------
 async function route() {
   try { await refresh(); } catch (e) {
-    if (e.auth) { clearToken(); return viewLogin('登录已过期，请重新登录'); }
-    app().innerHTML = `<div class="msg err">读取仓库失败：${esc(e.message)}</div>`; return;
+    if (e.auth) { clearToken(); return viewLogin('Your session has expired. Please sign in again.'); }
+    app().innerHTML = `<div class="msg err">Could not read the repository: ${esc(e.message)}</div>`; return;
   }
   const [, view, id] = location.hash.replace(/^#/, '').split('/');
   document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('on', a.dataset.nav === (view || 'list')));
