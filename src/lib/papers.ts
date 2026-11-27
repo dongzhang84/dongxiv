@@ -13,7 +13,7 @@ export const ID_RE = /^\d{4}\.\d{4}$/;
 // 学科名只能用 arXiv 分类表里的名字（src/lib/arxiv-subjects.json，取自 arxiv.org/category_taxonomy）
 const SUBJECTS = new Set(ARXIV_SUBJECTS.map((s) => s.name));
 const Subject = z.string().refine((s) => SUBJECTS.has(s), {
-  error: (iss) => `"${iss.input}" 不是 arXiv 的分类名（见 src/lib/arxiv-subjects.json）`,
+  error: (iss) => `"${iss.input}" is not an arXiv category name (see src/lib/arxiv-subjects.json)`,
 });
 
 const Tri = z.enum(['yes', 'no', 'partial']).optional();
@@ -79,19 +79,19 @@ function loadOne(id: string): Paper {
   const res = Meta.safeParse(raw);
   if (!res.success) {
     const issues = res.error.issues.map((i) => `  - ${i.path.join('.') || '(root)'}: ${i.message}`).join('\n');
-    throw new Error(`${where} 格式不对：\n${issues}`);
+    throw new Error(`${where} is invalid:\n${issues}`);
   }
   const meta = res.data;
 
   const versions = meta.versions.map((v, i) => {
     const n = i + 1;
-    if (v.file !== `v${n}.pdf`) throw new Error(`${where}: 第 ${n} 个版本的 file 应为 v${n}.pdf，实际是 ${v.file}`);
+    if (v.file !== `v${n}.pdf`) throw new Error(`${where}: version ${n} should have file v${n}.pdf, found ${v.file}`);
     const pdfPath = path.join(dir, v.file);
-    if (!fs.existsSync(pdfPath)) throw new Error(`${where}: 找不到 ${v.file}`);
+    if (!fs.existsSync(pdfPath)) throw new Error(`${where}: ${v.file} not found`);
     const actual = sha256(pdfPath);
     if (actual !== v.sha256)
-      throw new Error(`papers/${id}/${v.file} 的 SHA-256 与记录不一致（已发布的 PDF 不能替换，请发新版本）。\n  记录：${v.sha256}\n  实际：${actual}`);
-    if (i > 0 && v.date <= meta.versions[i - 1].date) throw new Error(`${where}: v${n} 的日期必须晚于 v${n - 1}`);
+      throw new Error(`papers/${id}/${v.file}: SHA-256 does not match the record (a published PDF cannot be replaced; post a new version).\n  recorded: ${v.sha256}\n  actual:   ${actual}`);
+    if (i > 0 && v.date <= meta.versions[i - 1].date) throw new Error(`${where}: the date of v${n} must be later than v${n - 1}`);
     // 只写了日期（如 2026-09-14）的版本，页面上只显示日期，不显示时刻
     const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(String(raw.versions?.[i]?.date ?? ''));
     return { ...v, v: n, pdfPath, dateOnly };
@@ -99,7 +99,7 @@ function loadOne(id: string): Paper {
 
   const first = versions[0].date;
   const yymm = `${String(first.getUTCFullYear()).slice(2)}${String(first.getUTCMonth() + 1).padStart(2, '0')}`;
-  if (!id.startsWith(yymm)) throw new Error(`${where}: 编号 ${id} 的年月应与 v1 的日期一致（${yymm}）`);
+  if (!id.startsWith(yymm)) throw new Error(`${where}: identifier ${id} must match the year and month of v1 (${yymm})`);
 
   const { versions: _drop, ...rest } = meta;
   return { ...rest, id, versions, first, updated: versions[versions.length - 1].date };

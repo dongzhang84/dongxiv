@@ -52,9 +52,9 @@ const todayUTC = () => new Date().toISOString().slice(0, 10);
 
 /** 表单里的日期：选今天就记下当前精确时间；选以前的日期（补录）就只记日期，不编造时刻。 */
 function normalizeDate(d) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(d ?? '')) fail('日期格式应为 YYYY-MM-DD');
-  if (Number.isNaN(Date.parse(d))) fail('日期无效');
-  if (d > todayUTC()) fail('日期不能晚于今天');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d ?? '')) fail('Date must be in YYYY-MM-DD format.');
+  if (Number.isNaN(Date.parse(d))) fail('Invalid date.');
+  if (d > todayUTC()) fail('The date cannot be later than today.');
   return d === todayUTC() ? new Date().toISOString().replace(/\.\d+Z$/, 'Z') : d;
 }
 
@@ -93,7 +93,7 @@ async function analyzePdf(file) {
 
 // ---------- 论文读写 ----------
 const paperDir = (id) => {
-  if (!ID_RE.test(id)) fail('编号格式不对');
+  if (!ID_RE.test(id)) fail('Invalid identifier.');
   return path.join(PAPERS, id);
 };
 const readMeta = (id) => YAML.parse(fs.readFileSync(path.join(paperDir(id), 'meta.yaml'), 'utf8'));
@@ -106,10 +106,10 @@ function nextId(date) {
   const yymm = date.slice(2, 4) + date.slice(5, 7);
   const same = allIds().filter((id) => id.startsWith(yymm + '.'));
   const n = same.reduce((m, id) => Math.max(m, Number(id.slice(5))), 0) + 1;
-  if (n > 9999) fail('这个月的编号已经用完');
+  if (n > 9999) fail('No identifiers left for this month.');
   const later = same.filter((id) => firstDate(readMeta(id)).slice(0, 10) > date.slice(0, 10));
   const warning = later.length
-    ? `同一个月里已有更晚发布的论文（${later.join(', ')}），新论文的编号会排在它们后面。`
+    ? `This month already has papers with a later date (${later.join(', ')}); the new paper will be numbered after them.`
     : '';
   return { id: `${yymm}.${String(n).padStart(4, '0')}`, warning };
 }
@@ -121,7 +121,7 @@ function cleanLinks(a, what) {
     .map((l) => ({ label: clean(l?.label), url: clean(l?.url) }))
     .filter((l) => l.label || l.url)
     .map((l) => {
-      if (!l.label || !/^https?:\/\/\S+$/.test(l.url)) fail(`${what}：每条都要有名称和以 http(s):// 开头的网址`);
+      if (!l.label || !/^https?:\/\/\S+$/.test(l.url)) fail(`${what}: each entry needs a label and a URL starting with http(s)://`);
       return l;
     });
 }
@@ -129,20 +129,20 @@ function cleanLinks(a, what) {
 /** 把表单内容整理成 meta.yaml 的字段（不含 versions），顺序固定，空字段省略。 */
 function buildMeta(f) {
   const m = {};
-  m.title = clean(f.title) || fail('标题不能为空');
+  m.title = clean(f.title) || fail('Title is required.');
   m.authors = cleanList(f.authors);
-  if (!m.authors.length) fail('至少要有一位作者');
-  m.abstract = clean(f.abstract) || fail('摘要不能为空');
+  if (!m.authors.length) fail('At least one author is required.');
+  m.abstract = clean(f.abstract) || fail('Abstract is required.');
   if (clean(f.comments)) m.comments = clean(f.comments);
   m.primary_subject = clean(f.primary_subject);
-  if (!SUBJECT_NAMES.has(m.primary_subject)) fail(`主学科 "${m.primary_subject}" 不是 arXiv 的分类名`);
+  if (!SUBJECT_NAMES.has(m.primary_subject)) fail(`Primary subject "${m.primary_subject}" is not an arXiv category name. Pick one from the list.`);
   const subjects = [...new Set(cleanList(f.subjects))].filter((s) => s !== m.primary_subject);
-  for (const s of subjects) if (!SUBJECT_NAMES.has(s)) fail(`交叉学科 "${s}" 不是 arXiv 的分类名`);
+  for (const s of subjects) if (!SUBJECT_NAMES.has(s)) fail(`Cross-list subject "${s}" is not an arXiv category name.`);
   if (subjects.length) m.subjects = subjects;
   const keywords = cleanList(f.keywords);
   if (keywords.length) m.keywords = keywords;
   if (clean(f.license) && clean(f.license) !== site.defaultLicense) m.license = clean(f.license);
-  const links = cleanLinks(f.links, '链接');
+  const links = cleanLinks(f.links, 'Links');
   if (links.length) m.links = links;
   if (clean(f.withdrawn)) m.withdrawn = clean(f.withdrawn);
 
@@ -152,7 +152,7 @@ function buildMeta(f) {
   if (cleanList(v.agents).length) vibe.agents = cleanList(v.agents);
   if (cleanList(v.models).length) vibe.models = cleanList(v.models);
   for (const k of ['machine_verified', 'human_verified', 'formal_verified']) if (TRI.has(v[k])) vibe[k] = v[k];
-  const materials = cleanLinks(v.materials, '材料');
+  const materials = cleanLinks(v.materials, 'Materials');
   if (materials.length) vibe.materials = materials;
   if (clean(v.notes)) vibe.notes = clean(v.notes);
   if (Object.keys(vibe).length) m.vibe = vibe;
@@ -160,9 +160,9 @@ function buildMeta(f) {
 }
 
 function takeUpload(token) {
-  if (!/^[0-9a-f]{32}$/.test(token ?? '')) fail('请先上传 PDF');
+  if (!/^[0-9a-f]{32}$/.test(token ?? '')) fail('Upload a PDF first.');
   const file = path.join(TMP, `${token}.pdf`);
-  if (!fs.existsSync(file)) fail('上传的 PDF 已失效，请重新上传');
+  if (!fs.existsSync(file)) fail('The uploaded PDF has expired; please upload it again.');
   return file;
 }
 
@@ -207,7 +207,7 @@ async function state() {
 async function publish() {
   const log = [];
   const { changes } = await gitState();
-  if (!changes.length) fail('没有需要发布的改动');
+  if (!changes.length) fail('Nothing to publish.');
   log.push('$ npm run build');
   try {
     const { stdout } = await execFileP('npm', ['run', 'build'], { cwd: ROOT, maxBuffer: 64 * 1024 * 1024 });
@@ -215,9 +215,9 @@ async function publish() {
   } catch (e) {
     const out = `${e.stdout ?? ''}\n${e.stderr ?? ''}`.split('\n');
     // 优先显示我们自己的校验信息（格式、学科、哈希、日期），其次是最后几行
-    const i = out.findIndex((l) => /格式不对|SHA-256|找不到|编号|日期|分类名/.test(l));
+    const i = out.findIndex((l) => /is invalid|SHA-256|not found|identifier|must be later|arXiv category/.test(l));
     log.push((i >= 0 ? out.slice(i, i + 6) : out.slice(-25)).join('\n').trim());
-    return { ok: false, log: log.join('\n') + '\n\n构建失败，没有提交也没有推送。' };
+    return { ok: false, log: log.join('\n') + '\n\nBuild failed; nothing was committed or pushed.' };
   }
   const added = changes.filter((c) => /\/v\d+\.pdf$/.test(c.file) && c.code !== 'D')
     .map((c) => { const [, id, v] = /^papers\/([^/]+)\/v(\d+)\.pdf$/.exec(c.file); return `${site.name}:${id}v${v}`; });
@@ -236,7 +236,7 @@ async function publish() {
     log.push(`${stdout}${stderr}`.trim() || 'ok');
   } catch (e) {
     log.push(`${e.stdout ?? ''}${e.stderr ?? ''}`.trim());
-    return { ok: false, log: log.join('\n') + '\n\n已在本地提交，但推送失败。检查网络或 GitHub 权限后，在终端运行 git push。' };
+    return { ok: false, log: log.join('\n') + '\n\nCommitted locally, but the push failed. Check your network or GitHub access, then run git push in a terminal.' };
   }
   return { ok: true, log: log.join('\n') };
 }
@@ -247,7 +247,7 @@ async function readBody(req, limit) {
   let size = 0;
   for await (const c of req) {
     size += c.length;
-    if (size > limit) fail(`文件太大（上限 ${Math.round(limit / 1024 / 1024)} MB）`);
+    if (size > limit) fail(`File too large (limit ${Math.round(limit / 1024 / 1024)} MB)`);
     chunks.push(c);
   }
   return Buffer.concat(chunks);
@@ -255,7 +255,7 @@ async function readBody(req, limit) {
 const readJson = async (req) => {
   try { return JSON.parse((await readBody(req, 2 * 1024 * 1024)).toString('utf8') || '{}'); } catch (e) {
     if (e instanceof UserError) throw e;
-    fail('请求格式不对');
+    fail('Malformed request.');
   }
 };
 const send = (res, code, body, type = 'application/json; charset=utf-8') => {
@@ -275,7 +275,7 @@ const routes = {
   },
   'POST /api/upload': async (req) => {
     const buf = await readBody(req, MAX_PDF);
-    if (buf.subarray(0, 5).toString() !== '%PDF-') fail('这不是 PDF 文件');
+    if (buf.subarray(0, 5).toString() !== '%PDF-') fail('This is not a PDF file.');
     const token = crypto.randomBytes(16).toString('hex');
     const file = path.join(TMP, `${token}.pdf`);
     await fsp.writeFile(file, buf);
@@ -315,7 +315,7 @@ const routes = {
     const n = old.versions.length + 1;
     const entry = await versionEntry(file, b.date, b.note, n);
     const prev = String(old.versions[n - 2].date);
-    if (Date.parse(entry.date) <= Date.parse(prev)) fail(`新版本的日期必须晚于 v${n - 1}（${prev.slice(0, 10)}）`);
+    if (Date.parse(entry.date) <= Date.parse(prev)) fail(`The new version's date must be later than v${n - 1} (${prev.slice(0, 10)})`);
     const meta = b.meta ? buildMeta(b.meta) : (({ versions, ...rest }) => rest)(old);
     await fsp.copyFile(file, path.join(paperDir(id), `v${n}.pdf`), fs.constants.COPYFILE_EXCL);
     await writeMeta(id, { ...meta, versions: [...old.versions, entry] });
@@ -325,7 +325,7 @@ const routes = {
   'DELETE /api/paper': async (req, res, url) => {
     const id = url.searchParams.get('id');
     const { tracked } = await gitState();
-    if ([...tracked].some((f) => f.startsWith(`papers/${id}/`))) fail('已发布的论文不能删除（可以在"修改信息"里标记为撤稿）');
+    if ([...tracked].some((f) => f.startsWith(`papers/${id}/`))) fail('A published paper cannot be deleted (you can withdraw it under "Edit info").');
     await fsp.rm(paperDir(id), { recursive: true });
     return { id };
   },
@@ -334,8 +334,8 @@ const routes = {
     const meta = readMeta(id);
     const n = meta.versions.length;
     const { tracked } = await gitState();
-    if (n < 2) fail('只有一个版本时，请删除整篇论文');
-    if (tracked.has(`papers/${id}/v${n}.pdf`)) fail('已发布的版本不能删除');
+    if (n < 2) fail('With only one version, delete the whole paper instead.');
+    if (tracked.has(`papers/${id}/v${n}.pdf`)) fail('A published version cannot be deleted.');
     await fsp.rm(path.join(paperDir(id), `v${n}.pdf`));
     await writeMeta(id, { ...meta, versions: meta.versions.slice(0, -1) });
     return { id };
@@ -349,9 +349,9 @@ const server = http.createServer(async (req, res) => {
     if (req.method !== 'GET' && !ORIGINS.has(req.headers.origin ?? '')) return send(res, 403, { error: 'forbidden' });
     const url = new URL(req.url ?? '/', `http://${req.headers.host}`);
     const route = routes[`${req.method} ${url.pathname}`];
-    if (!route) return send(res, 404, { error: '没有这个地址' });
+    if (!route) return send(res, 404, { error: 'Not found' });
     const write = req.method !== 'GET';
-    if (write && busy) return send(res, 409, { error: '上一个操作还没完成，请稍等' });
+    if (write && busy) return send(res, 409, { error: 'The previous operation is still running; please wait.' });
     if (write) busy = true;
     try {
       const out = await route(req, res, url);
@@ -362,7 +362,7 @@ const server = http.createServer(async (req, res) => {
   } catch (e) {
     const known = e instanceof UserError;
     if (!known) console.error(e);
-    if (!res.headersSent) send(res, known ? 400 : 500, { error: known ? e.message : `出错了：${e.message}` });
+    if (!res.headersSent) send(res, known ? 400 : 500, { error: known ? e.message : `Something went wrong: ${e.message}` });
   }
 });
 
@@ -388,8 +388,8 @@ process.on('SIGTERM', cleanup);
 
 server.listen(PORT, '127.0.0.1', () => {
   const url = `http://localhost:${PORT}`;
-  console.log(`\n  dongxiv 发布后台：${url}`);
-  console.log(`  网站预览：http://localhost:${SITE_PORT}`);
-  console.log('  按 Ctrl+C 退出\n');
+  console.log(`\n  dongxiv admin: ${url}`);
+  console.log(`  Site preview: http://localhost:${SITE_PORT}`);
+  console.log('  Press Ctrl+C to quit\n');
   if (process.platform === 'darwin' && !process.env.NO_OPEN) execFile('open', [url]);
 });
