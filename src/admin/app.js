@@ -122,13 +122,14 @@ function viewList() {
         <a href="/abs/${esc(p.id)}/" target="_blank" rel="noopener">View</a>
         <a href="#/version/${esc(p.id)}">New version</a>
         <a href="#/edit/${esc(p.id)}">Edit info</a>
+        ${p.meta.withdrawn ? `<a href="#/withdraw/${esc(p.id)}">Restore</a>` : `<a class="danger" href="#/withdraw/${esc(p.id)}">Withdraw</a>`}
       </td></tr>`;
   }).join('');
   app().innerHTML = `
     <h1>Papers</h1>
     ${S.papers.length ? `<table class="papers"><thead><tr><th>Identifier</th><th>Title</th><th>Versions</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table>`
       : '<div class="card">No papers yet. Click <a href="#/new">+ New paper</a> to start.</div>'}
-    <p class="muted">Published PDFs cannot be replaced or deleted; post a new version instead. To withdraw a paper, add a withdrawal note under "Edit info".</p>`;
+    <p class="muted">Published PDFs cannot be replaced or deleted; post a new version instead. Use "Withdraw" to take a paper off the site; its identifier is kept.</p>`;
 }
 
 // ---------- 表单部件 ----------
@@ -361,6 +362,39 @@ function viewEdit(id) {
   }); };
 }
 
+// ---------- 撤稿 / 恢复 ----------
+// 撤稿：论文从网站列表、订阅和搜索引擎中撤下；摘要页保留（显示撤稿说明），编号不再分配给别的论文
+function withMeta(meta, note) {
+  const { versions, withdrawn, ...rest } = meta;
+  return { ...rest, ...(note ? { withdrawn: note } : {}), versions };
+}
+function viewWithdraw(id) {
+  const p = S.papers.find((x) => x.id === id && x.meta);
+  if (!p) return (app().innerHTML = '<div class="msg err">No such paper</div>');
+  const restoring = !!p.meta.withdrawn;
+  app().innerHTML = restoring ? `<h1>Restore ${esc(SITE.name)}:${esc(id)}</h1>
+    <div class="card"><p class="t-title">${esc(p.meta.title)}</p>
+      <p>This paper is withdrawn: <i>${esc(p.meta.withdrawn)}</i></p>
+      <p class="muted">Restoring removes the withdrawal note and lists the paper on the site again.</p>
+      <div id="msg"></div><button class="btn" id="save">Restore paper</button></div>`
+    : `<h1>Withdraw ${esc(SITE.name)}:${esc(id)}</h1>
+    <form class="card" id="f" autocomplete="off"><p class="t-title">${esc(p.meta.title)}</p>
+      <p class="muted">The paper disappears from the listings, the feed and search engines. Its abstract page stays reachable by direct link and shows the note below, so existing links and citations still work. The identifier is never reused. You can restore it later.</p>
+      <div class="row"><label>Withdrawal note</label><div><input name="note" placeholder="e.g. The proof of Theorem 3 contains an error."><div class="hint">Required; shown on the abstract page</div></div></div>
+      <div id="msg"></div><button class="btn danger" id="save" type="submit">Withdraw paper</button></form>`;
+  const go = () => submit($('#save'), $('#msg'), async () => {
+    const note = restoring ? '' : $('#f').note.value.trim();
+    if (!restoring && !note) throw new Error('Write a short withdrawal note first');
+    if (!confirm(restoring ? 'Restore this paper on the site?' : 'Withdraw this paper from the site?')) throw new Error('Cancelled; nothing was published');
+    const sha = await gh.commit(S.head, [{ path: `papers/${id}/meta.yaml`, text: yaml(withMeta(p.meta, note)) }],
+      `${restoring ? 'Restore' : 'Withdraw'} ${SITE.name}:${id}`);
+    watchDeploy(sha, `${restoring ? 'restore' : 'withdrawal'} of ${SITE.name}:${id}`, `/abs/${id}/`);
+    await refresh(); location.hash = '#/';
+  });
+  if (restoring) $('#save').onclick = go;
+  else $('#f').onsubmit = (e) => { e.preventDefault(); go(); };
+}
+
 // ---------- 路由 ----------
 async function route() {
   try { await refresh(); } catch (e) {
@@ -372,6 +406,7 @@ async function route() {
   if (view === 'new') viewNew();
   else if (view === 'version') viewVersion(id);
   else if (view === 'edit') viewEdit(id);
+  else if (view === 'withdraw') viewWithdraw(id);
   else viewList();
   window.scrollTo(0, 0);
 }

@@ -56,6 +56,8 @@
   .btn { font: inherit; font-size: 14px; font-weight: 600; padding: 8px 18px; border-radius: 4px; border: 1px solid var(--brand); background: var(--brand); color: #fff; cursor: pointer; }
   .btn:disabled { opacity: .5; cursor: default; }
   .btn.secondary { background: #fff; color: var(--brand); }
+  .btn.danger { background: var(--bad); border-color: var(--bad); }
+  .actions a.danger { color: var(--bad); }
   .msg { padding: 9px 12px; border-radius: 4px; margin: 12px 0; font-size: 14px; white-space: pre-wrap; }
   .msg.err { background: #fde8e7; color: var(--bad); }
   .msg.ok { background: #e1f3e6; color: var(--ok); }
@@ -129,6 +131,7 @@ function viewList() {
         <a href="${siteUrl(`/abs/${p.id}/`)}" target="_blank" rel="noopener">Preview</a>
         <a href="#/version/${p.id}">New version</a>
         <a href="#/edit/${p.id}">Edit info</a>
+        ${p.meta.withdrawn ? `<a href="#/withdraw/${p.id}">Restore</a>` : `<a class="danger" href="#/withdraw/${p.id}">Withdraw</a>`}
         ${p.status === 'new' ? `<button class="link danger" data-del="${p.id}">Delete</button>` : ''}
         ${lastUnpublished ? `<button class="link danger" data-delv="${p.id}">Delete v${last.v}</button>` : ''}
       </td></tr>`;
@@ -337,6 +340,32 @@ function viewEdit(id) {
   }); };
 }
 
+// ---------- 撤稿 / 恢复 ----------
+function viewWithdraw(id) {
+  const p = S.papers.find((x) => x.id === id);
+  if (!p) return (app().innerHTML = '<div class="msg err">No such paper</div>');
+  const restoring = !!p.meta.withdrawn;
+  app().innerHTML = restoring ? `<h1>Restore ${esc(S.site.name)}:${esc(id)}</h1>
+    <div class="card"><p class="t-title">${esc(p.meta.title)}</p>
+      <p>This paper is withdrawn: <i>${esc(p.meta.withdrawn)}</i></p>
+      <p class="muted">Restoring removes the withdrawal note and lists the paper on the site again (after you publish).</p>
+      <div id="msg"></div><button class="btn" id="save">Restore (not public yet)</button></div>`
+    : `<h1>Withdraw ${esc(S.site.name)}:${esc(id)}</h1>
+    <form class="card" id="f" autocomplete="off"><p class="t-title">${esc(p.meta.title)}</p>
+      <p class="muted">After publishing, the paper disappears from the listings, the feed and search engines. Its abstract page stays reachable by direct link and shows the note below. The identifier is never reused. You can restore it later.</p>
+      <div class="row"><label>Withdrawal note</label><div><input name="note" placeholder="e.g. The proof of Theorem 3 contains an error."><div class="hint">Required; shown on the abstract page</div></div></div>
+      <div id="msg"></div><button class="btn danger" id="save" type="submit">Withdraw (not public yet)</button></form>`;
+  const go = () => submit($('#save'), $('#msg'), async () => {
+    const note = restoring ? '' : $('#f').note.value.trim();
+    if (!restoring && !note) throw new Error('Write a short withdrawal note first');
+    const { versions, ...meta } = p.meta;
+    await api('PUT', `/api/paper?id=${id}`, { meta: { ...meta, withdrawn: note } });
+    await refresh(); toast(restoring ? 'Restored; publish to apply' : 'Withdrawn; publish to apply'); location.hash = '#/';
+  });
+  if (restoring) $('#save').onclick = go;
+  else $('#f').onsubmit = (e) => { e.preventDefault(); go(); };
+}
+
 // ---------- 发布 ----------
 function viewPublish() {
   const label = { '??': 'Added', A: 'Added', M: 'Modified', D: 'Deleted' };
@@ -367,6 +396,7 @@ async function route() {
   if (view === 'new') viewNew();
   else if (view === 'version') viewVersion(id);
   else if (view === 'edit') viewEdit(id);
+  else if (view === 'withdraw') viewWithdraw(id);
   else if (view === 'publish') viewPublish();
   else viewList();
   window.scrollTo(0, 0);

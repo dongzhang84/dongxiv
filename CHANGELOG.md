@@ -2,6 +2,7 @@
 
 ## 2026-11-26
 
+- **后台加 Withdraw / Restore 按钮**（在线和本地）：论文列表每行都有；撤稿要填一句说明，已撤稿的论文显示 Restore，可以恢复上架。
 - **撤稿的论文从网站上撤下**：不再出现在首页、学科页、Most recent、Atom 订阅和 sitemap 里，也不参与上一篇/下一篇；摘要页保留（旧链接和引用仍能打开），显示撤稿说明，加 noindex，去掉 Google Scholar 标签。
 - **后台界面改为英文**：在线后台和本地后台（`npm run admin`）的所有页面、提示和报错，以及构建时的校验报错（格式、哈希、日期、编号、学科）。
 - **在线后台** `https://dongxiv.vercel.app/admin/`：用 GitHub 登录（只限 dongzhang84）后，在网站上上传 PDF、发布新论文和新版本、修改信息。每次点"发布"就提交到 GitHub，Vercel 自动上线，页面显示上线进度。
