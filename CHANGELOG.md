@@ -2,6 +2,7 @@
 
 ## 2026-11-27
 
+- **Formal proof 的源码链接可以用 main 分支**：不再要求固定 commit；链接里有 commit 号时，摘要页照旧显示 "(commit xxxxxxx)"。
 - **首页和学科页的列表也显示 "Formal proof" 一行**（系统 · 范围 · source 链接），放在 Comments 下面；两篇几何论文 Comments 里的 "formalized in Lean 4" 因此去掉，避免重复。
 - **摘要页新增 "Formal proof" 一行**：meta.yaml 的 `formal` 字段（system、scope、url、note），显示为 "Lean 4 + Mathlib · 范围 · source (commit xxxxxxx)"，下面一行是局限说明；有这一行时 Checking 自动显示 formally verified。两个后台的表单都加了这四项，源码链接必须指向固定 commit，写 main/master 会被拒绝。
 - **两篇几何论文加上 Lean 形式化信息**：dongxiv:2610.0001（主定理，8 条形式陈述）和 dongxiv:2610.0002（5 条主定理，16 条形式陈述，注明等角共轭的几何刻画未形式化），源码链接固定在 geometry-research 的 61c9a57（GitHub Actions 检查通过）；Comments 加上 "Main theorem(s) formalized in Lean 4"。

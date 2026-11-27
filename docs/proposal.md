@@ -136,7 +136,7 @@ links:
 formal:                       # 选填：形式化证明，摘要页显示为 "Formal proof" 一行
   system: Lean 4 + Mathlib
   scope: all 5 main theorems (16 formal statements)
-  url: https://github.com/.../tree/<commit>/...   # 必须是固定 commit 的永久链接，不能是 main
+  url: https://github.com/.../tree/main/...      # 源码链接；可以是 main，也可以是固定 commit
   note: ...                   # 选填：没有形式化的部分
 withdrawn: ...                # 写了就表示已撤稿：从列表、订阅、sitemap 中撤下，摘要页保留并显示撤稿说明
 

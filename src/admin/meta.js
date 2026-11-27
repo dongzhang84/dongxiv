@@ -69,7 +69,6 @@ export function buildMeta(f, defaultLicense) {
   if (Object.keys(formal).length) {
     if (!formal.system || !formal.url) fail('Formal proof: system and source URL are both required.');
     if (!/^https?:\/\/\S+$/.test(formal.url)) fail('Formal proof: the source URL must start with http(s)://');
-    if (/\/(tree|blob)\/(main|master)(\/|$)/.test(formal.url)) fail('Formal proof: link to a fixed commit, not a branch such as main (on GitHub, press y to get a permalink).');
     m.formal = formal;
   }
   if (clean(f.withdrawn)) m.withdrawn = clean(f.withdrawn);

@@ -194,7 +194,7 @@ function metaFields(m, { withdrawn = false } = {}) {
   <h2>Formal proof (optional)</h2>
   <div class="row"><label>System</label><div><input name="formal_system" value="${esc(fm.system)}" placeholder="e.g. Lean 4 + Mathlib"></div></div>
   <div class="row"><label>Scope</label><div><input name="formal_scope" value="${esc(fm.scope)}" placeholder="e.g. all 5 main theorems (16 formal statements)"></div></div>
-  <div class="row"><label>Source URL</label><div><input name="formal_url" value="${esc(fm.url)}" placeholder="https://github.com/…/tree/<commit>/…"><div class="hint">A permalink to the verified commit (on GitHub, press y), not a branch such as main</div></div></div>
+  <div class="row"><label>Source URL</label><div><input name="formal_url" value="${esc(fm.url)}" placeholder="https://github.com/…/tree/main/…"><div class="hint">Link to the Lean code, e.g. https://github.com/…/tree/main/…; a link to a fixed commit (on GitHub, press y) also works</div></div></div>
   <div class="row"><label>Note</label><div><input name="formal_note" value="${esc(fm.note)}" placeholder="Optional, e.g. what is not formalized"></div></div>
   <h2>AI involvement (optional; hidden if empty)</h2>
   <div class="row"><label>AI tools</label><div><input name="agents" value="${esc((v.agents || []).join(', '))}" placeholder="e.g. Claude Code"></div></div>
