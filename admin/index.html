@@ -183,7 +183,7 @@ function metaFields(m, { withdrawn = false } = {}) {
   <div class="row"><label>作者</label><div><input name="authors" value="${esc((m.authors || [S.site.author]).join(', '))}"><div class="hint">多位作者用英文逗号分隔</div></div></div>
   <div class="row"><label>摘要</label><div><textarea name="abstract">${esc(m.abstract)}</textarea>
     <div class="hint">公式写成 $x^2$ 或 $$…$$；空一行分段。下面是预览：</div><div class="preview" data-prev="abstract"></div></div></div>
-  <div class="row"><label>Comments</label><div><input name="comments" value="${esc(m.comments)}"><div class="hint" id="comments-hint">例如 9 pages, 2 figures, 1 table</div></div></div>
+  <div class="row"><label>Comments</label><div><input name="comments" value="${esc(m.comments)}"><div class="hint" id="comments-hint">例如 9 pages, 2 figures, 3 tables。自动预填只统计带 “Figure N / Table N” 标题的图表，附录里没标题的表格要自己数一下。</div></div></div>
   <div class="row"><label>主学科</label><div><input name="primary_subject" list="subject-list" value="${esc(m.primary_subject)}" placeholder="输入关键字选择 arXiv 分类"></div></div>
   <div class="row"><label>交叉学科</label><div>${multiRows('subjects', m.subjects, 'subject')}</div></div>
   <div class="row"><label>关键词</label><div><input name="keywords" value="${esc((m.keywords || []).join(', '))}"><div class="hint">选填，英文逗号分隔</div></div></div>
