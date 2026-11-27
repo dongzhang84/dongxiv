@@ -25,7 +25,7 @@ const entries = (k: number) => `${k} ${k === 1 ? 'entry' : 'entries'}`;
       <p class="totals">Total of {entries(papers.length)}</p>
       {days.map((d) => (
         <>
-          <h3 id={`d${d.key}`}>{fmtDay(d.date)} <span class="count">({entries(d.items.length)})</span></h3>
+          <h3 id={`d${d.key}`}>{fmtDay(d.date)}{d.items.length > 1 && <span class="count"> ({entries(d.items.length)})</span>}</h3>
           <dl class="list">
             {d.items.map((it) => <Entry paper={it.paper} n={it.n} />)}
           </dl>
