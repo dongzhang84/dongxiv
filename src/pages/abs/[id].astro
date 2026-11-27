@@ -4,7 +4,7 @@ import Base from '../../layouts/Base.astro';
 import site from '../../../site.config.mjs';
 import { getPapers, latest, type Paper, type PaperVersion } from '../../lib/papers';
 import {
-  pid, absUrl, pdfUrl, full, inline, esc, paragraphs, searchUrl, subjectUrl, checkingText, bibtex,
+  pid, absUrl, pdfUrl, full, inline, esc, paragraphs, subjectUrl, checkingText, bibtex,
   fmtShort, fmtDateTime,
 } from '../../lib/format';
 
@@ -79,7 +79,7 @@ const shownId = `${p.id}${pinned ? `v${v.v}` : ''}`;
         {p.withdrawn && <p class="withdrawn-note"><strong>Withdrawn:</strong> <span set:html={inline(p.withdrawn)} /></p>}
         <h1 class="title"><span class="descriptor">Title:</span>{p.title}</h1>
         <div class="authors">
-          <span class="descriptor">Authors:</span>{p.authors.map((a, i) => (<>{i > 0 && ', '}<a href={searchUrl(a)}>{a}</a></>))}
+          <span class="descriptor">Authors:</span>{p.authors.join(', ')}
         </div>
         <a class="mobile-download" href={pdfUrl(p.id, pinned ? v.v : undefined)}>View PDF</a>
         <blockquote class="abstract">
@@ -157,7 +157,7 @@ const shownId = `${p.id}${pinned ? `v${v.v}` : ''}`;
           &nbsp;|&nbsp;
           {nav.next ? <a href={absUrl(nav.next)} rel="next">next&nbsp;&gt;</a> : <span>next&nbsp;&gt;</span>}
         </div>
-        <div class="list"><a href={subjectUrl(p.primary_subject)}>recent</a> | <a href="/list/">all papers</a></div>
+        <div class="list"><a href={subjectUrl(p.primary_subject)}>recent</a> | <a href="/">all papers</a></div>
         {p.subjects.length > 0 && (
           <>
             <div class="abs-switch-cat">Change to browse by:</div>

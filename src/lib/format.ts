@@ -30,7 +30,6 @@ export const pid = (id: string, v?: number) => `${site.name}:${id}${v ? `v${v}` 
 export const absUrl = (id: string, v?: number) => `/abs/${id}${v ? `v${v}` : ''}/`;
 export const pdfUrl = (id: string, v?: number) => `/pdf/${id}${v ? `v${v}` : ''}.pdf`;
 export const full = (p: string) => new URL(p, site.baseUrl).href;
-export const searchUrl = (q: string) => `/search/?q=${encodeURIComponent(q)}`;
 
 /** 把三项验证状态写成一句话，例如 "checked by AI; partly checked by the author; not formally verified"。 */
 export function checkingText(vb: { machine_verified?: Tri; human_verified?: Tri; formal_verified?: Tri }) {

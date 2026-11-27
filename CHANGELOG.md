@@ -2,6 +2,8 @@
 
 ## 2026-11-26
 
+- **去掉搜索**：论文数量少，搜索页多余；删掉搜索页、`search.json` 和导航里的 Search，作者名不再链到搜索。
+- **首页改为按时间排列的列表**：按首次发布日分组（例如 "Tue, 3 Nov 2026 (1 entry)"），每条是 `[1] dongxiv:YYMM.NNNN [abs, pdf]`、标题、作者、Comments、Subjects；上方一行按学科浏览。`/list/` 并入首页，学科页 `/list/<学科>/` 保留。
 - **UI 改为贴近 arXiv 的版式**（原版和 liuxiv 太像）：
   - 顶栏改为全宽深蓝导航条：左边字标，右边 Search / Recent / About / Feed。
   - 首页改为 arXiv 首页的结构：简介、搜索框、按学科浏览（每个学科有 recent、search）、最新论文。去掉了编号说明和按月跳转。

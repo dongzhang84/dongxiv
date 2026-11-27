@@ -1,55 +1,20 @@
 ---
 import Base from '../layouts/Base.astro';
+import Listing from '../components/Listing.astro';
 import site from '../../site.config.mjs';
 import { getPapers } from '../lib/papers';
-import { inline, subjectsOf, absUrl, pid, fmtShort, searchUrl } from '../lib/format';
+import { inline, subjectsOf, subjectUrl } from '../lib/format';
 
 const papers = getPapers();
 const subjects = subjectsOf(papers);
-const recent = papers.slice(0, 5);
 ---
 <Base math>
-  <div class="home">
-    <p class="home-intro" set:html={`${inline(site.intro)} Materials on this site are not peer-reviewed.`} />
-
-    <form class="home-browse" action="/search/" method="get" role="search">
-      <label for="home-q">Search and browse:</label>
-      <div class="home-browse-row">
-        <input type="search" id="home-q" name="q" placeholder="Title, author, abstract, subject or ID" />
-        <button type="submit">Search</button>
-        <a class="button-like" href="/list/">Recent</a>
-      </div>
-    </form>
-
-    <h2>Subjects</h2>
-    {subjects.length === 0 ? (
-      <p>No papers yet.</p>
-    ) : (
-      <ul class="subject-list">
-        {subjects.map((s) => (
-          <li>
-            <a href={`/list/${s.key}/`}>{s.name}</a>
-            {' '}(<b>{s.total}</b> {s.total === 1 ? 'paper' : 'papers'}: <a href={`/list/${s.key}/`}>recent</a>, <a href={searchUrl(s.name)}>search</a>)
-          </li>
-        ))}
-      </ul>
-    )}
-
-    <h2>Latest</h2>
-    <ul class="latest-list">
-      {recent.map((p) => (
-        <li>
-          <a href={absUrl(p.id)}>{pid(p.id)}</a> <span class="latest-title">{p.title}</span>
-          <span class="latest-meta">{p.authors.join(', ')} · {fmtShort(p.first)}</span>
-        </li>
-      ))}
-    </ul>
-    <p><a href="/list/">All {papers.length} papers →</a></p>
-
-    <h2>About</h2>
-    <ul class="subject-list">
-      <li><a href="/about/">General information</a> · <a href="/about/#identifiers">identifiers and versions</a> · <a href="/about/#ai">AI assistance and checking</a> · <a href="/about/#integrity">checksums</a></li>
-      <li><a href="/feed.xml">Atom feed</a> of new papers and new versions</li>
-    </ul>
-  </div>
+  <p class="home-intro" set:html={`${inline(site.intro)} Materials on this site are not peer-reviewed.`} />
+  {subjects.length > 0 && (
+    <p class="home-subjects">
+      Browse by subject:{' '}
+      {subjects.map((s, i) => (<>{i > 0 && ' · '}<a href={subjectUrl(s.name)}>{s.name}</a> <span class="count">({s.total})</span></>))}
+    </p>
+  )}
+  <Listing papers={papers} />
 </Base>

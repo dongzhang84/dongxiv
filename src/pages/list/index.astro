@@ -1,9 +1,0 @@
----
-import Base from '../../layouts/Base.astro';
-import Listing from '../../components/Listing.astro';
-import site from '../../../site.config.mjs';
-import { getPapers } from '../../lib/papers';
----
-<Base title={`${site.name} recent submissions`} math>
-  <Listing heading="All papers" papers={getPapers()} />
-</Base>

@@ -16,5 +16,6 @@ interface Props { name: string; papers: Paper[] }
 const { name, papers } = Astro.props;
 ---
 <Base title={`${name} — ${site.name}`} math>
+  <p class="home-intro"><a href="/">All papers</a> &gt; {name}</p>
   <Listing heading={name} papers={papers} />
 </Base>

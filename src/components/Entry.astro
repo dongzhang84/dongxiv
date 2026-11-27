@@ -1,7 +1,7 @@
 ---
 // 列表页里的一条论文（作者和标题，不含摘要）
 import type { Paper } from '../lib/papers';
-import { pid, absUrl, pdfUrl, inline, searchUrl, subjectUrl } from '../lib/format';
+import { pid, absUrl, pdfUrl, inline, subjectUrl } from '../lib/format';
 
 interface Props { paper: Paper; n: number }
 const { paper: p, n } = Astro.props;
@@ -9,14 +9,12 @@ const { paper: p, n } = Astro.props;
 <dt>
   <a name={`item${n}`}>[{n}]</a>{' '}
   <a href={absUrl(p.id)} title="Abstract" class="id-link">{pid(p.id)}</a>{' '}
-  [<a href={pdfUrl(p.id)} title="Download PDF">pdf</a>]
+  [<a href={absUrl(p.id)} title="Abstract">abs</a>, <a href={pdfUrl(p.id)} title="Download PDF">pdf</a>]
   {p.withdrawn && <span class="withdrawn">(withdrawn)</span>}
 </dt>
 <dd>
   <div class="list-title"><span class="descriptor">Title:</span>{p.title}</div>
-  <div class="list-authors">
-    {p.authors.map((a, i) => (<>{i > 0 && ', '}<a href={searchUrl(a)}>{a}</a></>))}
-  </div>
+  <div class="list-authors">{p.authors.join(', ')}</div>
   {p.comments && <div class="list-comments"><span class="descriptor">Comments:</span> <span set:html={inline(p.comments)} /></div>}
   <div class="list-subjects">
     <span class="descriptor">Subjects:</span> <a class="primary-subject" href={subjectUrl(p.primary_subject)}>{p.primary_subject}</a>{p.subjects.map((s) => (<>; <a href={subjectUrl(s)}>{s}</a></>))}

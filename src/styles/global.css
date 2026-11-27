@@ -34,34 +34,19 @@ code, pre { font-family: var(--mono); font-size: 0.9em; }
 .site-nav { display: flex; align-items: center; gap: 4px; }
 .site-nav a { color: rgba(255, 255, 255, 0.88); font-size: 14px; font-weight: 600; padding: 8px 12px; border-radius: 3px; display: inline-flex; align-items: center; gap: 6px; }
 .site-nav a:hover { color: #fff; background: rgba(255, 255, 255, 0.1); text-decoration: none; }
-.nav-search { font-weight: 500 !important; }
 
 main { padding: 0 20px 40px; min-height: 60vh; }
 .page-heading { font-size: 26px; font-weight: 600; margin: 18px 0 10px; }
 
 /* ---------- 首页 ---------- */
-.home { max-width: 1100px; padding-top: 18px; }
-.home-intro { max-width: 640px; margin: 4px 0 18px; }
-.home-browse { display: inline-block; border: 1px solid var(--rule); padding: 8px 10px 10px; margin-bottom: 10px; max-width: 100%; }
-.home-browse label { display: block; font-weight: 600; margin-bottom: 4px; }
-.home-browse-row { display: flex; gap: 6px; flex-wrap: wrap; }
-.home-browse input { font: inherit; font-size: 14px; padding: 3px 6px; width: 340px; max-width: 100%; border: 1px solid #aaa; }
-.home-browse button, .button-like, .search-page button {
-  font: inherit; font-size: 14px; padding: 3px 10px; border: 1px solid #aaa; border-radius: 2px;
-  background: linear-gradient(#fdfdfd, #e9e9e9); color: var(--text); cursor: pointer;
-}
-.button-like:hover { text-decoration: none; background: #e4e4e4; }
-.home h2 { font-size: 23px; font-weight: 600; margin: 26px 0 10px; }
-.subject-list, .latest-list { margin: 0; padding-left: 40px; }
-.subject-list li, .latest-list li { margin: 3px 0; }
-.latest-title { font-weight: 500; }
-.latest-meta { color: var(--muted); font-size: 13.5px; margin-left: 6px; }
+.home-intro { max-width: 720px; margin: 18px 0 8px; }
+.home-subjects { font-size: 14px; margin: 0 0 4px; max-width: 900px; }
+.home-subjects .count { color: var(--muted); }
 
 /* ---------- 列表页 ---------- */
 .listing h1 { font-size: 27px; font-weight: 600; margin: 18px 0 8px; }
 .listing h2 { font-size: 20px; font-weight: 600; margin: 0 0 12px; }
-.date-index { margin: 0 0 14px; padding-left: 40px; font-size: 14px; }
-.totals { font-size: 14px; margin: 0 0 6px; }
+.totals { font-size: 14px; margin: 10px 0 6px; color: var(--muted); }
 .listing h3 { font-size: 16.5px; font-weight: 600; margin: 22px 0 6px; }
 .list { margin: 0; }
 .list dt { margin-top: 14px; font-size: 14.5px; }
@@ -127,15 +112,12 @@ blockquote.abstract p:last-child { margin-bottom: 0; }
 #bibtex pre { white-space: pre-wrap; word-break: break-word; font-size: 11px; background: var(--panel); border: 1px solid var(--rule); padding: 6px; margin: 8px 0 6px; }
 .copy { font: inherit; font-size: 12.5px; padding: 2px 8px; border: 1px solid #aaa; border-radius: 2px; background: linear-gradient(#fdfdfd, #e9e9e9); cursor: pointer; }
 
-/* ---------- About、搜索 ---------- */
+/* ---------- About ---------- */
 .prose { max-width: 760px; }
 .prose h2 { font-size: 19px; font-weight: 600; margin: 26px 0 8px; }
 .defs dt { font-weight: 600; }
 .defs dd { margin: 0 0 8px 24px; }
 .code { background: var(--panel); border: 1px solid var(--rule); padding: 8px 10px; overflow-x: auto; }
-.search-page { display: flex; gap: 6px; margin: 6px 0 10px; }
-.search-page input { font: inherit; font-size: 14px; padding: 3px 6px; width: min(480px, 100%); border: 1px solid #aaa; }
-#status { color: var(--text); font-weight: 600; }
 
 /* ---------- 页脚 ---------- */
 .site-footer { background: var(--panel); border-top: 1px solid var(--rule); padding: 14px 20px 22px; font-size: 13px; color: var(--muted); }
@@ -158,5 +140,4 @@ blockquote.abstract p:last-child { margin-bottom: 0; }
   blockquote.abstract { margin: 14px 0 18px; }
   .mobile-download { display: inline-block; margin: 8px 0 0; font-weight: 600; }
   .list dd { margin-left: 0; }
-  .subject-list, .latest-list, .date-index { padding-left: 22px; }
 }
