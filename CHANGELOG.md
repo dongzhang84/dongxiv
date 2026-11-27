@@ -2,6 +2,13 @@
 
 ## 2026-11-26
 
+- **UI 改为贴近 arXiv 的版式**（原版和 liuxiv 太像）：
+  - 顶栏改为全宽深蓝导航条：左边字标，右边 Search / Recent / About / Feed。
+  - 首页改为 arXiv 首页的结构：简介、搜索框、按学科浏览（每个学科有 recent、search）、最新论文。去掉了编号说明和按月跳转。
+  - 新增列表页 `/list/`（全部）和 `/list/<学科>/`："Authors and titles for recent submissions"、日期索引、按日分组，条目不显示摘要。
+  - 摘要页改为左右两栏：学科条、Submitted on 日期行、标题、作者、摘要、元数据表、Submission history；右栏是 Access Paper、Current browse context、Export BibTeX Citation。
+  - 去掉 ✓◐✗ 验证框：AI 信息并入元数据表（AI tools、Author's role、Checking 用一句话说明、Materials）；SHA-256 收进可折叠的 "SHA-256 checksums of the PDFs"。
+  - 字体换成 IBM Plex Sans；去掉深色模式。
 - **阶段 1：本地原型（Astro 7.4.7）**
   - 首页按首次发布日分组列出论文，顶部按月跳转；每条显示编号、[abs, pdf]、标题、作者、Comments、Subjects、摘要。
   - 摘要页 `/abs/<id>/`（最新版）和 `/abs/<id>vN/`（指定版本）：日期行、摘要（KaTeX 渲染公式）、"How this paper was made"、元数据表、版本历史（UTC 时间、页数、SHA-256）；侧栏有 PDF 下载、BibTeX 一键复制、哈希、上一篇/下一篇。旧版本页面有提示条，撤稿论文有撤稿说明。

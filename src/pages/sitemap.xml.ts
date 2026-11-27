@@ -7,6 +7,7 @@ export const GET: APIRoute = () => {
   const urls = [
     { loc: full('/') },
     { loc: full('/about/') },
+    { loc: full('/list/') },
     ...getPapers().map((p) => ({ loc: full(absUrl(p.id)), lastmod: p.updated.toISOString().slice(0, 10) })),
   ];
   const body = `<?xml version="1.0" encoding="UTF-8"?>

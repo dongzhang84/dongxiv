@@ -3,64 +3,62 @@ import Base from '../../layouts/Base.astro';
 import site from '../../../site.config.mjs';
 const n = site.name;
 ---
-<Base title="About" crumbs={[{ label: 'about' }]}>
+<Base title={`About ${n}`}>
   <div class="prose">
-    <h1 class="page-title">About {n}</h1>
+    <h1 class="page-heading">About {n}</h1>
     <p>
-      {n} is a personal archive of research papers by {site.author}. It is laid out like a preprint server, but it hosts
-      only the author's own work and has no moderation, submission or review process. It is not affiliated with arXiv or
-      Cornell University.
+      {n} is a personal archive of research papers by {site.author}. It follows the conventions of preprint servers
+      (identifiers, versions, abstract pages, listings), but it hosts only the author's own work and has no submission
+      or moderation process. Materials on this site are not peer-reviewed. {n} is not affiliated with arXiv or Cornell
+      University.
     </p>
 
-    <h2 id="vibe">Vibe research</h2>
+    <h2 id="ai">AI assistance and checking</h2>
     <p>
-      The papers here are produced through <em>vibe research</em>: the questions, the key ideas and the final judgement
-      are human, while much of the exploration, computation, checking and writing is done together with AI systems. Each
-      abstract page has a section <strong>How this paper was made</strong> that states, as far as the author records it,
-      who did what, which agent systems and models were used, how the results were checked, and where supporting
-      materials (code, data, transcripts) can be found.
+      The papers here are written through <em>vibe research</em>: the questions, the key ideas and the final judgement
+      are the author's, and much of the exploration, computation and drafting is done with AI systems. Where the author
+      has recorded it, the abstract page lists:
     </p>
+    <dl class="defs">
+      <dt>AI tools</dt><dd>the agent systems and models used.</dd>
+      <dt>Author's role</dt><dd>what the author contributed directly.</dd>
+      <dt>Checking</dt>
+      <dd>
+        how the results were checked: by AI (for example independent AI review of the manuscript or of the
+        derivations, which is not formal verification), by the author by hand, and in a proof assistant such as Lean.
+        Each can be stated as done, partly done or not done; anything not mentioned has not been stated.
+      </dd>
+      <dt>Materials</dt><dd>code, data or transcripts that support the paper.</dd>
+    </dl>
+    <p>These statements are the author's own. Readers should check every claim independently before relying on it.</p>
 
-    <h2 id="verification">Verification marks</h2>
-    <table class="kv legend">
-      <tr><th scope="row">Machine-verified</th><td>The results were checked by AI systems (for example independent AI review of the manuscript or of the derivations). This is not formal verification.</td></tr>
-      <tr><th scope="row">Human-verified</th><td>The author has checked the results by hand.</td></tr>
-      <tr><th scope="row">Formally verified</th><td>The main results have been checked in a proof assistant (for example Lean).</td></tr>
-    </table>
-    <p>
-      <span class="mark mark-yes">✓</span> yes &nbsp; <span class="mark mark-partial">◐</span> partially &nbsp;
-      <span class="mark mark-no">✗</span> no &nbsp; <span class="mark mark-na">–</span> not stated.
-      These marks are the author's own statements. Readers should check every claim independently before relying on it.
-    </p>
-
-    <h2 id="identifiers">Identifiers</h2>
+    <h2 id="identifiers">Identifiers and versions</h2>
     <p>
       Every paper has a permanent identifier <code>{n}:YYMM.NNNN</code>. YYMM is the year and month of the first version
       (UTC) and NNNN is its order within that month. A specific version is cited as <code>{n}:YYMM.NNNNvN</code>; the
-      identifier without a version always points to the latest version.
+      identifier without a version always refers to the latest version.
     </p>
-    <table class="kv">
-      <tr><th scope="row">Abstract page</th><td><code>/abs/YYMM.NNNN/</code> (latest), <code>/abs/YYMM.NNNNvN/</code> (version N)</td></tr>
-      <tr><th scope="row">PDF</th><td><code>/pdf/YYMM.NNNN.pdf</code> (latest), <code>/pdf/YYMM.NNNNvN.pdf</code> (version N)</td></tr>
-    </table>
-    <p>These addresses never change. A withdrawn paper keeps its page and identifier, with a withdrawal notice.</p>
+    <ul>
+      <li>Abstract page: <code>/abs/YYMM.NNNN/</code>, or <code>/abs/YYMM.NNNNvN/</code> for version N</li>
+      <li>PDF: <code>/pdf/YYMM.NNNN.pdf</code>, or <code>/pdf/YYMM.NNNNvN.pdf</code> for version N</li>
+    </ul>
+    <p>These addresses do not change. A withdrawn paper keeps its identifier and abstract page, with a withdrawal notice.</p>
 
-    <h2 id="integrity">Versions and integrity</h2>
+    <h2 id="integrity">Checksums</h2>
     <p>
-      A posted PDF is never replaced. Any change, however small, is posted as a new version, and the version history on
-      each abstract page lists the UTC time, page count and SHA-256 hash of every version. The site is rebuilt from a
-      <a href={site.repoUrl}>public Git repository</a>, and the build refuses to publish if any stored PDF no longer
-      matches its recorded hash. The commit history of that repository is a second, independent record of when each
-      version was added.
+      A posted PDF is never replaced; every change is posted as a new version. The submission history on each abstract
+      page lists the SHA-256 checksum of every version. The site is built from a
+      <a href={site.repoUrl}>public Git repository</a> whose commit history is an independent record of when each
+      version was added, and the build fails if a stored PDF no longer matches its recorded checksum.
     </p>
-    <p>To check that a PDF you downloaded is the posted one, compare its hash with the one on the abstract page:</p>
-    <pre class="code">shasum -a 256 2611.0001v1.pdf       # macOS / Linux
-certutil -hashfile 2611.0001v1.pdf SHA256   # Windows</pre>
+    <p>To check a downloaded PDF, compute its checksum and compare it with the one on the abstract page:</p>
+    <pre class="code">shasum -a 256 2611.0001v1.pdf              # macOS, Linux
+certutil -hashfile 2611.0001v1.pdf SHA256  # Windows</pre>
 
     <h2 id="citing">Citing</h2>
     <p>
-      Each abstract page has a BibTeX entry. Cite a paper as <code>{n}:YYMM.NNNN</code> with its URL, or add the version
-      (<code>vN</code>) to refer to a specific version.
+      Cite a paper as <code>{n}:YYMM.NNNN</code> together with its URL, adding <code>vN</code> to refer to a specific
+      version. Each abstract page has a BibTeX entry under <em>Export BibTeX Citation</em>.
     </p>
 
     <h2 id="feed">Feed</h2>

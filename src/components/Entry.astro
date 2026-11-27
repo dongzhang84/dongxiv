@@ -1,28 +1,24 @@
 ---
-// 列表页里的一条论文
+// 列表页里的一条论文（作者和标题，不含摘要）
 import type { Paper } from '../lib/papers';
-import { latest } from '../lib/papers';
-import { pid, absUrl, pdfUrl, inline, searchUrl, fmtShort } from '../lib/format';
+import { pid, absUrl, pdfUrl, inline, searchUrl, subjectUrl } from '../lib/format';
 
 interface Props { paper: Paper; n: number }
 const { paper: p, n } = Astro.props;
-const last = latest(p);
 ---
-<dt id={p.id}>
-  <span class="num">[{n}]</span>
-  <a href={absUrl(p.id)} title="Abstract">{pid(p.id)}</a>
-  <span class="fmt">[<a href={absUrl(p.id)}>abs</a>, <a href={pdfUrl(p.id)}>pdf</a>]</span>
-  {p.versions.length > 1 && <span class="rev">revised {fmtShort(last.date)} (v{last.v})</span>}
-  {p.withdrawn && <span class="tag-withdrawn">withdrawn</span>}
+<dt>
+  <a name={`item${n}`}>[{n}]</a>{' '}
+  <a href={absUrl(p.id)} title="Abstract" class="id-link">{pid(p.id)}</a>{' '}
+  [<a href={pdfUrl(p.id)} title="Download PDF">pdf</a>]
+  {p.withdrawn && <span class="withdrawn">(withdrawn)</span>}
 </dt>
 <dd>
-  <div class="e-title"><a href={absUrl(p.id)}>{p.title}</a></div>
-  <div class="e-authors">
+  <div class="list-title"><span class="descriptor">Title:</span>{p.title}</div>
+  <div class="list-authors">
     {p.authors.map((a, i) => (<>{i > 0 && ', '}<a href={searchUrl(a)}>{a}</a></>))}
   </div>
-  {p.comments && <div class="e-row"><span class="desc">Comments:</span> <span set:html={inline(p.comments)} /></div>}
-  <div class="e-row">
-    <span class="desc">Subjects:</span> <span class="primary">{p.primary_subject}</span>{p.subjects.length > 0 && `; ${p.subjects.join('; ')}`}
+  {p.comments && <div class="list-comments"><span class="descriptor">Comments:</span> <span set:html={inline(p.comments)} /></div>}
+  <div class="list-subjects">
+    <span class="descriptor">Subjects:</span> <a class="primary-subject" href={subjectUrl(p.primary_subject)}>{p.primary_subject}</a>{p.subjects.map((s) => (<>; <a href={subjectUrl(s)}>{s}</a></>))}
   </div>
-  <p class="e-abstract">{p.abstract.trim().replace(/\s*\n\s*/g, ' ')}</p>
 </dd>

@@ -32,11 +32,15 @@ export const pdfUrl = (id: string, v?: number) => `/pdf/${id}${v ? `v${v}` : ''}
 export const full = (p: string) => new URL(p, site.baseUrl).href;
 export const searchUrl = (q: string) => `/search/?q=${encodeURIComponent(q)}`;
 
-export const triMark = (t: Tri) =>
-  t === 'yes' ? { sym: '✓', text: 'yes', cls: 'yes' }
-  : t === 'no' ? { sym: '✗', text: 'no', cls: 'no' }
-  : t === 'partial' ? { sym: '◐', text: 'partial', cls: 'partial' }
-  : { sym: '–', text: 'not stated', cls: 'na' };
+/** 把三项验证状态写成一句话，例如 "checked by AI; partly checked by the author; not formally verified"。 */
+export function checkingText(vb: { machine_verified?: Tri; human_verified?: Tri; formal_verified?: Tri }) {
+  const say = (t: Tri, yes: string, partial: string, no: string) => (t === 'yes' ? yes : t === 'partial' ? partial : t === 'no' ? no : '');
+  return [
+    say(vb.machine_verified, 'checked by AI', 'partly checked by AI', 'not checked by AI'),
+    say(vb.human_verified, 'checked by the author', 'partly checked by the author', 'not yet checked by the author'),
+    say(vb.formal_verified, 'formally verified', 'partly formally verified', 'not formally verified'),
+  ].filter(Boolean).join('; ');
+}
 
 export function bibtex(p: Paper, v?: PaperVersion) {
   const lines = [
@@ -51,4 +55,21 @@ export function bibtex(p: Paper, v?: PaperVersion) {
   if (v) lines.push(`  note         = {Version ${v.v}, ${fmtShort(v.date)}},`);
   lines[lines.length - 1] = lines[lines.length - 1].replace(/,$/, '');
   return [...lines, '}'].join('\n');
+}
+
+export const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+export const subjectUrl = (s: string) => `/list/${slug(s)}/`;
+
+/** 所有学科（主学科和交叉学科），按名字排序，带篇数。 */
+export function subjectsOf(papers: Paper[]) {
+  const m = new Map<string, { name: string; primary: number; total: number }>();
+  for (const p of papers) {
+    [p.primary_subject, ...p.subjects].forEach((s, i) => {
+      const e = m.get(slug(s)) ?? { name: s, primary: 0, total: 0 };
+      e.total++;
+      if (i === 0) e.primary++;
+      m.set(slug(s), e);
+    });
+  }
+  return [...m.entries()].map(([key, v]) => ({ key, ...v })).sort((a, b) => a.name.localeCompare(b.name));
 }

@@ -2,8 +2,8 @@
 import Base from '../../layouts/Base.astro';
 import site from '../../../site.config.mjs';
 ---
-<Base title="Search" crumbs={[{ label: 'search' }]} noindex>
-  <h1 class="page-title">Search</h1>
+<Base title="Search" noindex>
+  <h1 class="page-heading">Search</h1>
   <form class="search-page" action="/search/" method="get" role="search">
     <input type="search" name="q" id="q" placeholder="Title, author, abstract, subject or ID" aria-label="Search papers" />
     <button type="submit">Search</button>
@@ -43,19 +43,14 @@ import site from '../../../site.config.mjs';
           .toLowerCase();
         return terms.every((t) => hay.includes(t));
       });
-      status.textContent = `${hits.length} result${hits.length === 1 ? '' : 's'} for “${q}”`;
+      status.textContent = hits.length ? `Showing 1–${hits.length} of ${hits.length} results for all: ${q}` : `Sorry, your query for all: ${q} produced no results.`;
       hits.forEach((it, i) => {
         const dt = el('dt');
-        dt.append(el('span', 'num', `[${i + 1}]`), ' ', link(`/abs/${it.id}/`, `${prefix}:${it.id}`), ' ');
-        const fmt = el('span', 'fmt');
-        fmt.append('[', link(`/abs/${it.id}/`, 'abs'), ', ', link(`/pdf/${it.id}.pdf`, 'pdf'), ']');
-        dt.append(fmt, ' ', el('span', 'rev', it.date));
+        dt.append(`[${i + 1}] `, link(`/abs/${it.id}/`, `${prefix}:${it.id}`), ' [', link(`/pdf/${it.id}.pdf`, 'pdf'), ']');
         const dd = el('dd');
-        const t = el('div', 'e-title');
-        t.append(link(`/abs/${it.id}/`, it.title));
-        dd.append(t, el('div', 'e-authors', it.authors.join(', ')));
-        const s = el('div', 'e-row');
-        s.append(el('span', 'desc', 'Subjects:'), ' ', it.subjects.join('; '));
+        dd.append(el('div', 'list-title', it.title), el('div', 'list-authors', it.authors.join(', ')));
+        const s = el('div', 'list-subjects');
+        s.append(el('span', 'descriptor', 'Subjects:'), ' ', it.subjects.join('; '));
         dd.append(s);
         out.append(dt, dd);
       });

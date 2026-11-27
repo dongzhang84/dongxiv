@@ -4,7 +4,7 @@ import Base from '../../layouts/Base.astro';
 import site from '../../../site.config.mjs';
 import { getPapers, latest, type Paper, type PaperVersion } from '../../lib/papers';
 import {
-  pid, absUrl, pdfUrl, full, inline, esc, paragraphs, searchUrl, triMark, bibtex,
+  pid, absUrl, pdfUrl, full, inline, esc, paragraphs, searchUrl, subjectUrl, checkingText, bibtex,
   fmtShort, fmtDateTime,
 } from '../../lib/format';
 
@@ -12,9 +12,8 @@ export function getStaticPaths() {
   const papers = [...getPapers()].reverse(); // 从旧到新，用来算上一篇/下一篇
   return papers.flatMap((paper, i) => {
     const nav = { prev: papers[i - 1]?.id, next: papers[i + 1]?.id };
-    const last = latest(paper);
     return [
-      { params: { id: paper.id }, props: { paper, version: last, pinned: false, nav } },
+      { params: { id: paper.id }, props: { paper, version: latest(paper), pinned: false, nav } },
       ...paper.versions.map((version) => ({
         params: { id: `${paper.id}v${version.v}` },
         props: { paper, version, pinned: true, nav },
@@ -35,50 +34,27 @@ const isLatest = v.v === last.v;
 const multi = p.versions.length > 1;
 const vb = p.vibe;
 const license = p.license ?? site.defaultLicense;
+const link = (l: { label: string; url: string }) => `<a href="${esc(l.url)}">${inline(l.label)}</a>`;
 
 // 日期行
-let dateline = `First posted on ${fmtShort(p.first)}`;
+const v1 = `<a href="${absUrl(p.id, 1)}">v1</a>`;
+let dateline = `Submitted on ${fmtShort(p.first)}`;
 if (multi) {
-  dateline += ' (v1)';
-  if (isLatest) dateline += `, last revised ${fmtShort(v.date)} (this version, v${v.v})`;
-  else {
-    if (v.v > 1) dateline += `, revised ${fmtShort(v.date)} (this version, v${v.v})`;
-    else dateline += ' (this version)';
-    dateline += `, latest version ${fmtShort(last.date)} (v${last.v})`;
-  }
+  if (isLatest) dateline += ` (${v1}), last revised ${fmtShort(v.date)} (this version, v${v.v})`;
+  else if (v.v === 1) dateline += ` (this version), latest version ${fmtShort(last.date)} (<a href="${absUrl(p.id, last.v)}">v${last.v}</a>)`;
+  else dateline += ` (${v1}), revised ${fmtShort(v.date)} (this version, v${v.v}), latest version ${fmtShort(last.date)} (<a href="${absUrl(p.id, last.v)}">v${last.v}</a>)`;
 }
 
-const vibeRows: { label: string; html: string }[] = [];
-if (vb.human_role) vibeRows.push({ label: 'Human role', html: inline(vb.human_role) });
-if (vb.agents.length) vibeRows.push({ label: 'Agent system', html: vb.agents.map(inline).join(', ') });
-if (vb.models.length) vibeRows.push({ label: 'Models', html: vb.models.map(inline).join(', ') });
-const marks = [
-  ['Machine-verified', vb.machine_verified],
-  ['Human-verified', vb.human_verified],
-  ['Formally verified', vb.formal_verified],
-] as const;
-const anyMark = marks.some(([, t]) => t);
-if (anyMark)
-  for (const [label, t] of marks) {
-    const m = triMark(t);
-    vibeRows.push({ label, html: `<span class="mark mark-${m.cls}" title="${m.text}">${m.sym}</span> ${m.text}` });
-  }
-if (vb.materials.length)
-  vibeRows.push({ label: 'Materials', html: vb.materials.map((l) => `<a href="${esc(l.url)}">${inline(l.label)}</a>`).join(' · ') });
-if (vb.notes) vibeRows.push({ label: 'Notes', html: inline(vb.notes) });
+// 元数据表里关于 AI 的几行
+const tools = [...vb.agents, ...vb.models];
+const checking = checkingText(vb);
 
 const abs = full(absUrl(p.id));
 const ymd = (d: Date) => d.toISOString().slice(0, 10).replace(/-/g, '/');
 const description = p.abstract.trim().replace(/\s+/g, ' ').slice(0, 300);
+const shownId = `${p.id}${pinned ? `v${v.v}` : ''}`;
 ---
-<Base
-  title={`[${p.id}${pinned ? `v${v.v}` : ''}] ${p.title}`}
-  description={description}
-  crumbs={[{ label: 'abs', href: '/' }, { label: `${p.id}${pinned ? `v${v.v}` : ''}` }]}
-  canonical={abs}
-  noindex={pinned}
-  math
->
+<Base title={`[${shownId}] ${p.title}`} description={description} canonical={abs} noindex={pinned} math>
   <Fragment slot="head">
     <meta name="citation_title" content={p.title} />
     {p.authors.map((a) => <meta name="citation_author" content={a} />)}
@@ -93,117 +69,122 @@ const description = p.abstract.trim().replace(/\s+/g, ' ').slice(0, 300);
     <meta property="og:url" content={abs} />
   </Fragment>
 
-  <div class="abs">
-    <article class="abs-main">
-      <div class="abs-id">{pid(p.id, pinned ? v.v : undefined)}</div>
-      {p.withdrawn && (
-        <div class="banner banner-withdrawn"><strong>This paper has been withdrawn.</strong> <span set:html={inline(p.withdrawn)} /></div>
-      )}
-      {!isLatest && (
-        <div class="banner">You are viewing an older version (v{v.v}). <a href={absUrl(p.id)}>View the latest version (v{last.v})</a>.</div>
-      )}
-      <p class="dateline">[{dateline}]</p>
-      <h1 class="abs-title">{p.title}</h1>
-      <div class="abs-authors">
-        {p.authors.map((a, i) => (<>{i > 0 && ', '}<a href={searchUrl(a)}>{a}</a></>))}
+  <div id="abs-outer">
+    <div class="leftcolumn">
+      <div class="subheader">
+        <h1><a href="/">{site.name}</a> &gt; <a href={subjectUrl(p.primary_subject)}>{p.primary_subject}</a></h1>
       </div>
+      <div id="abs">
+        <div class="dateline">[<Fragment set:html={dateline} />]</div>
+        {p.withdrawn && <p class="withdrawn-note"><strong>Withdrawn:</strong> <span set:html={inline(p.withdrawn)} /></p>}
+        <h1 class="title"><span class="descriptor">Title:</span>{p.title}</h1>
+        <div class="authors">
+          <span class="descriptor">Authors:</span>{p.authors.map((a, i) => (<>{i > 0 && ', '}<a href={searchUrl(a)}>{a}</a></>))}
+        </div>
+        <a class="mobile-download" href={pdfUrl(p.id, pinned ? v.v : undefined)}>View PDF</a>
+        <blockquote class="abstract">
+          <span class="descriptor">Abstract:</span>
+          {paragraphs(p.abstract).map((para) => <p>{para}</p>)}
+        </blockquote>
 
-      <section class="abs-abstract" aria-label="Abstract">
-        <span class="desc">Abstract:</span>
-        {paragraphs(p.abstract).map((para) => <p>{para}</p>)}
-      </section>
-
-      <section class="vibe" aria-labelledby="vibe-h">
-        <h2 id="vibe-h">How this paper was made</h2>
-        {vibeRows.length ? (
-          <table class="kv">
-            {vibeRows.map((r) => (
-              <tr><th scope="row">{r.label}:</th><td set:html={r.html} /></tr>
-            ))}
+        <div class="metatable">
+          <table>
+            {p.comments && <tr><td class="label">Comments:</td><td class="comments" set:html={inline(p.comments)} /></tr>}
+            <tr>
+              <td class="label">Subjects:</td>
+              <td><span class="primary-subject">{p.primary_subject}</span>{p.subjects.length > 0 && `; ${p.subjects.join('; ')}`}</td>
+            </tr>
+            {p.keywords.length > 0 && <tr><td class="label">Keywords:</td><td>{p.keywords.join(', ')}</td></tr>}
+            {tools.length > 0 && <tr><td class="label">AI tools:</td><td>{tools.join('; ')}</td></tr>}
+            {vb.human_role && <tr><td class="label">Author's role:</td><td set:html={inline(vb.human_role)} /></tr>}
+            {checking && <tr><td class="label"><a href="/about/#ai">Checking</a>:</td><td>{checking}</td></tr>}
+            {vb.materials.length > 0 && <tr><td class="label">Materials:</td><td set:html={vb.materials.map(link).join(', ')} /></tr>}
+            {vb.notes && <tr><td class="label">AI notes:</td><td set:html={inline(vb.notes)} /></tr>}
+            {p.links.length > 0 && <tr><td class="label">Links:</td><td set:html={p.links.map(link).join(', ')} /></tr>}
+            <tr>
+              <td class="label">Cite as:</td>
+              <td><span class="arxivid"><a href={absUrl(p.id)}>{pid(p.id)}</a></span></td>
+            </tr>
+            <tr>
+              <td class="label">&nbsp;</td>
+              <td>(or <span class="arxivid"><a href={absUrl(p.id, v.v)}>{pid(p.id, v.v)}</a></span> for this version)</td>
+            </tr>
+            <tr>
+              <td class="label">&nbsp;</td>
+              <td><a href={abs}>{abs}</a></td>
+            </tr>
           </table>
-        ) : (
-          <p class="muted">Not stated.</p>
-        )}
-        <p class="vibe-foot">Verification marks are the author's own statements. See <a href="/about/#verification">what they mean</a>; readers should check every claim independently.</p>
-      </section>
-
-      <table class="kv meta">
-        {p.comments && <tr><th scope="row">Comments:</th><td set:html={inline(p.comments)} /></tr>}
-        <tr>
-          <th scope="row">Subjects:</th>
-          <td><span class="primary">{p.primary_subject}</span>{p.subjects.length > 0 && `; ${p.subjects.join('; ')}`}</td>
-        </tr>
-        {p.keywords.length > 0 && <tr><th scope="row">Keywords:</th><td>{p.keywords.join(', ')}</td></tr>}
-        {p.links.length > 0 && (
-          <tr><th scope="row">Links:</th><td set:html={p.links.map((l) => `<a href="${esc(l.url)}">${inline(l.label)}</a>`).join(' · ')} /></tr>
-        )}
-        <tr><th scope="row">License:</th><td>{license}</td></tr>
-        <tr>
-          <th scope="row">Cite as:</th>
-          <td>
-            <a class="cite" href={absUrl(p.id)}>{pid(p.id)}</a>
-            <span class="muted"> (or <a href={absUrl(p.id, v.v)}>{pid(p.id, v.v)}</a> for this version)</span>
-            <div class="url">{abs}</div>
-          </td>
-        </tr>
-      </table>
-
-      <section class="history" aria-labelledby="hist-h">
-        <h2 id="hist-h">Version history</h2>
-        <ol>
-          {p.versions.map((x) => (
-            <li class={x.v === v.v ? 'current' : undefined}>
-              <a href={absUrl(p.id, x.v)}><strong>[v{x.v}]</strong></a>
-              {' '}{fmtDateTime(x.date)}{x.pages && ` · ${x.pages} pages`}
-              {' · '}<a href={pdfUrl(p.id, x.v)}>pdf</a>
-              {x.note && <div class="h-note" set:html={inline(x.note)} />}
-              <div class="hash"><span class="muted">SHA-256</span> <code>{x.sha256}</code></div>
-            </li>
-          ))}
-        </ol>
-      </section>
-    </article>
-
-    <aside class="abs-side">
-      <div class="box">
-        <h2>Get the paper</h2>
-        <ul>
-          <li><a class="btn" href={pdfUrl(p.id, v.v)}>View PDF{v.pages && ` (${v.pages} pages)`}</a></li>
-          {!isLatest && <li><a href={pdfUrl(p.id)}>Latest version (v{last.v})</a></li>}
-          {p.links.map((l) => <li><a href={l.url}>{l.label}</a></li>)}
-        </ul>
-        <p class="small muted">{license}</p>
+        </div>
       </div>
 
-      <div class="box">
-        <h2>Cite</h2>
-        <details>
-          <summary>BibTeX</summary>
-          <pre class="bib" id="bib">{bibtex(p, pinned ? v : undefined)}</pre>
-          <button type="button" class="copy" data-target="bib">Copy</button>
+      <div class="submission-history">
+        <h2>Submission history</h2>
+        From: {p.authors[0]}<br />
+        {p.versions.map((x) => (
+          <>
+            <strong>{x.v === v.v && pinned ? `[v${x.v}]` : <a href={absUrl(p.id, x.v)}>[v{x.v}]</a>}</strong>
+            {' '}{fmtDateTime(x.date)}{x.pages && ` (${x.pages} pages)`}
+            {x.note && <span class="version-note"> — <Fragment set:html={inline(x.note)} /></span>}
+            <br />
+          </>
+        ))}
+        <details class="checksums">
+          <summary>SHA-256 checksums of the PDFs</summary>
+          <table>
+            {p.versions.map((x) => <tr><td>v{x.v}</td><td><code>{x.sha256}</code></td></tr>)}
+          </table>
+          <p>Every posted PDF is kept unchanged. <a href="/about/#integrity">How to check a download</a>.</p>
         </details>
       </div>
+    </div>
 
-      <div class="box">
-        <h2>Integrity</h2>
-        <p class="small">SHA-256 of this PDF (v{v.v}):</p>
-        <code class="hash-side">{v.sha256}</code>
-        <p class="small"><a href="/about/#integrity">How to verify</a></p>
+    <div class="extra-services">
+      <div class="full-text">
+        <h2>Access Paper:</h2>
+        <ul>
+          <li><a class="abs-button" href={pdfUrl(p.id, pinned ? v.v : undefined)}>View PDF</a></li>
+          {!isLatest && <li><a class="abs-button" href={pdfUrl(p.id)}>Latest version (v{last.v})</a></li>}
+          {p.links.map((l) => <li><a class="abs-button" href={l.url}>{l.label}</a></li>)}
+        </ul>
+        <div class="abs-license">License: {license}</div>
       </div>
 
-      <div class="box">
-        <h2>Browse</h2>
-        <p class="browse">
-          {nav.prev ? <a href={absUrl(nav.prev)} rel="prev">‹ prev</a> : <span class="muted">‹ prev</span>}
-          <span class="sep">|</span>
-          {nav.next ? <a href={absUrl(nav.next)} rel="next">next ›</a> : <span class="muted">next ›</span>}
-        </p>
-        <p class="small"><a href="/">All papers</a></p>
+      <div class="browse">
+        <h3>Current browse context:</h3>
+        <div class="current"><a href={subjectUrl(p.primary_subject)}>{p.primary_subject}</a></div>
+        <div class="prevnext">
+          {nav.prev ? <a href={absUrl(nav.prev)} rel="prev">&lt;&nbsp;prev</a> : <span>&lt;&nbsp;prev</span>}
+          &nbsp;|&nbsp;
+          {nav.next ? <a href={absUrl(nav.next)} rel="next">next&nbsp;&gt;</a> : <span>next&nbsp;&gt;</span>}
+        </div>
+        <div class="list"><a href={subjectUrl(p.primary_subject)}>recent</a> | <a href="/list/">all papers</a></div>
+        {p.subjects.length > 0 && (
+          <>
+            <div class="abs-switch-cat">Change to browse by:</div>
+            <div class="switch">{p.subjects.map((s) => <><a href={subjectUrl(s)}>{s}</a><br /></>)}</div>
+          </>
+        )}
       </div>
-    </aside>
+
+      <div class="bib-export">
+        <h3><a href="#bibtex" id="bib-toggle" aria-controls="bibtex" aria-expanded="false">Export BibTeX Citation</a></h3>
+        <div id="bibtex" hidden>
+          <pre id="bib">{bibtex(p, pinned ? v : undefined)}</pre>
+          <button type="button" class="copy" data-target="bib">Copy to clipboard</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
+    const toggle = document.getElementById('bib-toggle');
+    const box = document.getElementById('bibtex');
+    toggle?.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (!box) return;
+      box.hidden = !box.hidden;
+      toggle.setAttribute('aria-expanded', String(!box.hidden));
+    });
     document.querySelectorAll<HTMLButtonElement>('button.copy').forEach((b) => {
       b.addEventListener('click', async () => {
         const el = document.getElementById(b.dataset.target!);
@@ -214,7 +195,7 @@ const description = p.abstract.trim().replace(/\s+/g, ' ').slice(0, 300);
         } catch {
           b.textContent = 'Select and copy manually';
         }
-        setTimeout(() => (b.textContent = 'Copy'), 1500);
+        setTimeout(() => (b.textContent = 'Copy to clipboard'), 1500);
       });
     });
   </script>

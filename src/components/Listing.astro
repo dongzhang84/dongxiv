@@ -1,0 +1,39 @@
+---
+// arXiv 式的列表页主体：日期索引、总数、按日分组的条目
+import Entry from './Entry.astro';
+import type { Paper } from '../lib/papers';
+import { fmtDay, dayKey } from '../lib/format';
+
+interface Props { heading: string; papers: Paper[] }
+const { heading, papers } = Astro.props;
+
+const days: { key: string; date: Date; items: { paper: Paper; n: number }[] }[] = [];
+papers.forEach((paper, i) => {
+  const key = dayKey(paper.first);
+  let g = days[days.length - 1];
+  if (!g || g.key !== key) days.push((g = { key, date: paper.first, items: [] }));
+  g.items.push({ paper, n: i + 1 });
+});
+---
+<div class="listing">
+  <h1>{heading}</h1>
+  <h2>Authors and titles for recent submissions</h2>
+  {papers.length === 0 ? (
+    <p>No papers yet.</p>
+  ) : (
+    <>
+      <ul class="date-index">
+        {days.map((d) => <li><a href={`#d${d.key}`}>{fmtDay(d.date)}</a></li>)}
+      </ul>
+      <p class="totals">Total of {papers.length} {papers.length === 1 ? 'entry' : 'entries'}</p>
+      {days.map((d) => (
+        <>
+          <h3 id={`d${d.key}`}>{fmtDay(d.date)} (showing {d.items.length} of {d.items.length} {d.items.length === 1 ? 'entry' : 'entries'})</h3>
+          <dl class="list">
+            {d.items.map((it) => <Entry paper={it.paper} n={it.n} />)}
+          </dl>
+        </>
+      ))}
+    </>
+  )}
+</div>
