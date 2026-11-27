@@ -1,23 +1,11 @@
-# 示例论文（demo），正式上线前删除
-title: Dimensional analysis as a first check on AI-assisted derivations
-authors: [Dong]
-abstract: |
-  Long symbolic derivations produced with AI assistance fail in characteristic ways: dropped factors of
-  $2\pi$, inconsistent sign conventions, and terms with the wrong physical dimension. We describe a lightweight
-  protocol that checks every intermediate expression for dimensional consistency and for the correct limiting
-  behaviour, and apply it to the energy flux $\dot E \propto q^2 a^2 / c^3$ of an accelerated charge.
-comments: 3 pages. Demo entry for the dongxiv prototype, not a real paper.
-primary_subject: Physics Education
-subjects: [Classical Physics]
-keywords: [dimensional analysis, AI-assisted research]
-vibe:
-  human_role: Problem choice, checking protocol, final review
-  agents: [Claude Code]
-  models: [Claude Opus 5.5]
-  machine_verified: "yes"
-  human_verified: "yes"
+title: A Seven-Point Sphere of the Tetrahedron
+authors:
+  - Dong Zhang
+abstract: "Let $V_0V_1V_2V_3$ be a tetrahedron with circumcentre $O$, circumradius $R$ and centroid $G$, and let $O'$ and $H'$ be the circumcentre and the orthocentre of the face $V_1V_2V_3$ opposite $V_0$. We show that seven points attached to the vertex $V_0$ lie on one sphere: the second intersection of the line $V_0G$ with the circumsphere; the pole of the plane $V_1V_2V_3$ with respect to the circumsphere; the point $4G-3V_0$; the orthocentre $H'$; the inverse of $G$ in the circumsphere; and the two points $4G-3O$ and $4O'-3O$. Each vertex gives such a sphere, and all four are orthogonal to the sphere with centre $O$ and radius $2R$, so $O$ has the same power $4R^2$ with respect to all four. Moreover, the four spheres share the two points $4G-3O$ and the inverse of $G$, their centres lie in a plane perpendicular to $OG$, and every point of the line $OG$ has the same power with respect to all four. The proof is a short linear computation once the family of spheres orthogonal to that sphere is fixed. The result holds whenever $G\\neq O$ and the plane $V_1V_2V_3$ does not pass through $O$, so that all seven points are finite; when $O$, $G$, $O'$, $V_0$ are coplanar the sphere degenerates to a plane."
+comments: 9 pages, 2 figures, 3 tables
+primary_subject: Metric Geometry
 versions:
-  - date: "2026-10-14T16:05:00Z"
+  - date: 2026-10-22
     file: v1.pdf
-    sha256: 3162a49806d9749cdc348b522a521a2ed3b17a4653c433724154dafd342c2903
-    pages: 3
+    sha256: acd21f451e33f2e6343d741a2217c0d419636025428b673c11d2a66abf63049f
+    pages: 9
