@@ -2,6 +2,14 @@
 
 ## 2026-11-26
 
+- **阶段 2：发布后台** `npm run admin`（http://localhost:4322）
+  - 新论文：拖入 PDF，自动读页数、SHA-256，预填标题、摘要和 "N pages, x figures, y tables"；选日期（补录旧论文只记日期，不编时刻），编号按 UTC 年月自动分配；学科从 arXiv 分类中选；AI 信息选填；摘要公式实时预览。
+  - 发新版本、修改信息（含撤稿）、删除未发布的论文或版本；已发布的 PDF 和版本不能删除或替换。
+  - 发布：先构建检查，再只提交 `papers/` 并推送；构建失败不提交，并显示具体原因。
+  - 只监听本机，校验 Host 和 Origin；只接受 PDF，单个文件不超过 95 MB。
+- **学科限定为 arXiv 分类**：`src/lib/arxiv-subjects.json`（155 个，取自 arxiv.org/category_taxonomy），构建时校验。
+- **只写日期的版本**：补录时只填日期，页面上不显示时刻。
+- **示例论文已删除**；网站作者名改为 Dong Zhang；`pdfs/` 不进仓库。
 - **首页恢复 "Most recent" 模块**：最新 3 篇（编号、标题、作者、日期），放在按学科浏览下面、"All papers" 按时间列表上面。
 - **去掉搜索**：论文数量少，搜索页多余；删掉搜索页、`search.json` 和导航里的 Search，作者名不再链到搜索。
 - **首页改为按时间排列的列表**：按首次发布日分组（例如 "Tue, 3 Nov 2026 (1 entry)"），每条是 `[1] dongxiv:YYMM.NNNN [abs, pdf]`、标题、作者、Comments、Subjects；上方一行按学科浏览。`/list/` 并入首页，学科页 `/list/<学科>/` 保留。

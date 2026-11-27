@@ -5,7 +5,7 @@ import site from '../../../site.config.mjs';
 import { getPapers, latest, type Paper, type PaperVersion } from '../../lib/papers';
 import {
   pid, absUrl, pdfUrl, full, inline, esc, paragraphs, subjectUrl, checkingText, bibtex,
-  fmtShort, fmtDateTime,
+  fmtShort, fmtDateTime, fmtDay,
 } from '../../lib/format';
 
 export function getStaticPaths() {
@@ -123,7 +123,7 @@ const shownId = `${p.id}${pinned ? `v${v.v}` : ''}`;
         {p.versions.map((x) => (
           <>
             <strong>{x.v === v.v && pinned ? `[v${x.v}]` : <a href={absUrl(p.id, x.v)}>[v{x.v}]</a>}</strong>
-            {' '}{fmtDateTime(x.date)}{x.pages && ` (${x.pages} pages)`}
+            {' '}{x.dateOnly ? fmtDay(x.date) : fmtDateTime(x.date)}{x.pages && ` (${x.pages} pages)`}
             {x.note && <span class="version-note"> — <Fragment set:html={inline(x.note)} /></span>}
             <br />
           </>

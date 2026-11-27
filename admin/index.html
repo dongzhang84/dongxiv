@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>dongxiv 发布后台</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root { --brand: #26456e; --tint: #e9eef5; --rule: #d9d9d9; --muted: #5f6670; --link: #1c4fb4; --ok: #1f7a3f; --bad: #b3261e; --warn-bg: #fff6df; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 -apple-system, "IBM Plex Sans", "PingFang SC", "Helvetica Neue", Arial, sans-serif; color: #111; background: #fafafa; }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header { background: var(--brand); color: #fff; display: flex; align-items: center; gap: 22px; padding: 0 24px; height: 52px; flex-wrap: wrap; }
+  header .logo { font-size: 22px; font-weight: 600; color: #fff; }
+  header .logo i { font-weight: 300; }
+  header .logo small { font-size: 14px; font-weight: 400; opacity: .8; margin-left: 8px; }
+  header nav { display: flex; gap: 6px; margin-left: auto; }
+  header nav a { color: #fff; opacity: .9; padding: 6px 12px; border-radius: 3px; font-weight: 600; font-size: 14px; }
+  header nav a:hover, header nav a.on { background: rgba(255,255,255,.14); text-decoration: none; opacity: 1; }
+  .badge { background: #f2b544; color: #222; border-radius: 9px; padding: 0 7px; font-size: 12px; margin-left: 4px; }
+  main { max-width: 1060px; margin: 0 auto; padding: 22px 24px 60px; }
+  h1 { font-size: 24px; margin: 4px 0 16px; }
+  h2 { font-size: 17px; margin: 26px 0 10px; padding-bottom: 4px; border-bottom: 1px solid var(--rule); }
+  .card { background: #fff; border: 1px solid var(--rule); border-radius: 4px; padding: 16px 18px; margin-bottom: 16px; }
+  table.papers { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--rule); }
+  table.papers th, table.papers td { text-align: left; padding: 9px 12px; border-bottom: 1px solid #eee; vertical-align: top; font-size: 14px; }
+  table.papers th { background: #f3f4f6; font-weight: 600; }
+  .t-title { font-weight: 600; }
+  .vers { white-space: nowrap; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .status { font-size: 12px; padding: 1px 7px; border-radius: 9px; white-space: nowrap; }
+  .st-new { background: #fff0c2; } .st-changed { background: #ffe2c2; } .st-published { background: #e1f3e6; color: var(--ok); }
+  .actions a, .actions button { margin-right: 10px; font-size: 13.5px; }
+  button.link { background: none; border: 0; padding: 0; color: var(--link); cursor: pointer; font: inherit; }
+  button.link.danger { color: var(--bad); }
+  .row { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 10px 14px; align-items: start; margin-bottom: 12px; }
+  .row > label { padding-top: 6px; font-weight: 600; font-size: 14px; }
+  .row .hint { color: var(--muted); font-size: 12.5px; margin-top: 3px; }
+  input[type=text], input[type=date], input:not([type]), textarea, select { font: inherit; font-size: 14px; padding: 6px 8px; border: 1px solid #b9bec6; border-radius: 3px; width: 100%; background: #fff; }
+  textarea { min-height: 150px; resize: vertical; }
+  .tri { display: flex; gap: 14px; flex-wrap: wrap; }
+  .tri label { font-weight: 400; display: flex; gap: 6px; align-items: center; }
+  .tri select { width: auto; }
+  .multi > div { display: flex; gap: 6px; margin-bottom: 6px; }
+  .multi > div input { flex: 1; }
+  .preview { margin-top: 6px; padding: 8px 10px; background: var(--tint); border-radius: 3px; font-size: 14px; min-height: 1.5em; }
+  .preview:empty { display: none; }
+  .drop { border: 2px dashed #9aa6b5; border-radius: 6px; padding: 26px; text-align: center; background: #fff; cursor: pointer; }
+  .drop.over { background: var(--tint); border-color: var(--brand); }
+  .drop .big { font-size: 16px; font-weight: 600; }
+  .pdfinfo { margin-top: 10px; font-size: 13.5px; }
+  .pdfinfo code { font-size: 12px; word-break: break-all; }
+  .btn { font: inherit; font-size: 14px; font-weight: 600; padding: 8px 18px; border-radius: 4px; border: 1px solid var(--brand); background: var(--brand); color: #fff; cursor: pointer; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn.secondary { background: #fff; color: var(--brand); }
+  .msg { padding: 9px 12px; border-radius: 4px; margin: 12px 0; font-size: 14px; white-space: pre-wrap; }
+  .msg.err { background: #fde8e7; color: var(--bad); }
+  .msg.ok { background: #e1f3e6; color: var(--ok); }
+  .msg.warn { background: var(--warn-bg); color: #7a5300; }
+  pre.log { background: #1e2229; color: #e6e6e6; padding: 12px; border-radius: 4px; font-size: 12.5px; white-space: pre-wrap; max-height: 420px; overflow: auto; }
+  details > summary { cursor: pointer; font-weight: 600; color: var(--link); margin: 8px 0; }
+  .idbox { font-family: ui-monospace, Menlo, monospace; font-weight: 600; }
+  .toast { position: fixed; right: 20px; bottom: 20px; background: #1e2229; color: #fff; padding: 10px 16px; border-radius: 4px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  @media (max-width: 700px) { .row { grid-template-columns: 1fr; gap: 4px; } .row > label { padding-top: 0; } }
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="#/">dong<i>xiv</i><small>发布后台</small></a>
+  <nav>
+    <a href="#/" data-nav="list">论文</a>
+    <a href="#/new" data-nav="new">+ 新论文</a>
+    <a href="#/publish" data-nav="publish">发布<span id="pending" class="badge" hidden></span></a>
+    <a id="site-link" href="http://localhost:4321/" target="_blank" rel="noopener">打开网站 ↗</a>
+  </nav>
+</header>
+<main id="app"><p class="muted">加载中…</p></main>
+<datalist id="subject-list"></datalist>
+<div id="toast" class="toast"></div>
+
+<script>
+'use strict';
+let S = null; // 服务器返回的状态
+
+// ---------- 工具 ----------
+const $ = (sel, root = document) => root.querySelector(sel);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const app = () => $('#app');
+function toast(text) { const t = $('#toast'); t.textContent = text; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); }
+
+async function api(method, url, body, raw) {
+  const opt = { method, headers: {} };
+  if (raw) { opt.body = raw; opt.headers['Content-Type'] = 'application/pdf'; }
+  else if (body !== undefined) { opt.body = JSON.stringify(body); opt.headers['Content-Type'] = 'application/json'; }
+  const r = await fetch(url, opt);
+  const j = await r.json().catch(() => ({ error: `服务器返回 ${r.status}` }));
+  if (!r.ok) throw new Error(j.error || `出错了（${r.status}）`);
+  return j;
+}
+async function refresh() {
+  S = await api('GET', '/api/state');
+  $('#subject-list').innerHTML = S.subjects.map((s) => `<option value="${esc(s.name)}">${esc(s.code)}</option>`).join('');
+  const n = S.changes.length;
+  const b = $('#pending'); b.hidden = !n; b.textContent = n;
+  $('#site-link').href = `http://localhost:${S.sitePort}/`;
+}
+const siteUrl = (p) => `http://localhost:${S.sitePort}${p}`;
+const statusLabel = { new: '未发布', changed: '有改动未发布', published: '已发布' };
+function math(el) {
+  if (window.renderMathInElement) renderMathInElement(el, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '\\(', right: '\\)', display: false }, { left: '$', right: '$', display: false }], throwOnError: false });
+}
+
+// ---------- 论文列表 ----------
+function viewList() {
+  const rows = S.papers.map((p) => {
+    if (p.error) return `<tr><td>${esc(p.id)}</td><td colspan="4" class="msg err">meta.yaml 读取失败：${esc(p.error)}</td></tr>`;
+    const last = p.versions[p.versions.length - 1];
+    const lastUnpublished = p.versions.length > 1 && !last.published;
+    return `<tr>
+      <td><span class="idbox">${esc(S.site.name)}:${esc(p.id)}</span></td>
+      <td><div class="t-title">${esc(p.meta.title)}</div><div class="muted">${esc((p.meta.authors || []).join(', '))} · ${esc(p.meta.primary_subject)}</div></td>
+      <td class="vers">${p.versions.map((v) => `v${v.v} <span class="muted">${esc(String(v.date).slice(0, 10))}${v.published ? '' : '（未发布）'}</span>`).join('<br>')}</td>
+      <td><span class="status st-${p.status}">${statusLabel[p.status]}</span></td>
+      <td class="actions">
+        <a href="${siteUrl(`/abs/${p.id}/`)}" target="_blank" rel="noopener">预览</a>
+        <a href="#/version/${p.id}">发新版本</a>
+        <a href="#/edit/${p.id}">修改信息</a>
+        ${p.status === 'new' ? `<button class="link danger" data-del="${p.id}">删除</button>` : ''}
+        ${lastUnpublished ? `<button class="link danger" data-delv="${p.id}">删除 v${last.v}</button>` : ''}
+      </td></tr>`;
+  }).join('');
+  app().innerHTML = `
+    <h1>论文</h1>
+    ${S.papers.length ? `<table class="papers"><thead><tr><th>编号</th><th>标题</th><th>版本</th><th>状态</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table>`
+      : '<div class="card">还没有论文。点右上角 <a href="#/new">+ 新论文</a> 开始。</div>'}
+    ${S.changes.length ? `<div class="msg warn">有 ${S.changes.length} 个文件的改动还没发布。确认无误后到 <a href="#/publish">发布</a> 页面推送上线。</div>` : ''}`;
+  app().querySelectorAll('[data-del]').forEach((b) => b.onclick = async () => {
+    if (!confirm(`删除未发布的论文 ${b.dataset.del}？PDF 和信息都会删掉。`)) return;
+    try { await api('DELETE', `/api/paper?id=${b.dataset.del}`); toast('已删除'); await refresh(); viewList(); } catch (e) { alert(e.message); }
+  });
+  app().querySelectorAll('[data-delv]').forEach((b) => b.onclick = async () => {
+    if (!confirm(`删除 ${b.dataset.delv} 未发布的最后一个版本？`)) return;
+    try { await api('DELETE', `/api/paper/version?id=${b.dataset.delv}`); toast('已删除'); await refresh(); viewList(); } catch (e) { alert(e.message); }
+  });
+}
+
+// ---------- 表单部件 ----------
+function multiRows(name, values, kind) {
+  const row = (v) => kind === 'link'
+    ? `<div><input placeholder="名称，如 Code" data-k="label" value="${esc(v?.label)}"><input placeholder="https://…" data-k="url" value="${esc(v?.url)}"><button type="button" class="link danger" data-rm>删除</button></div>`
+    : `<div><input list="subject-list" placeholder="输入关键字选择分类" value="${esc(v)}"><button type="button" class="link danger" data-rm>删除</button></div>`;
+  return `<div class="multi" data-multi="${name}" data-kind="${kind}">${(values || []).map(row).join('')}<button type="button" class="link" data-add>+ 添加</button></div>`;
+}
+function wireMulti(root) {
+  root.querySelectorAll('[data-multi]').forEach((box) => {
+    box.addEventListener('click', (e) => {
+      if (e.target.matches('[data-rm]')) e.target.parentElement.remove();
+      if (e.target.matches('[data-add]')) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = multiRows('x', [box.dataset.kind === 'link' ? {} : ''], box.dataset.kind);
+        e.target.before(tmp.querySelector('.multi > div'));
+      }
+    });
+  });
+}
+function readMulti(root, name) {
+  const box = root.querySelector(`[data-multi="${name}"]`);
+  return [...box.querySelectorAll(':scope > div')].map((d) => box.dataset.kind === 'link'
+    ? { label: d.querySelector('[data-k=label]').value, url: d.querySelector('[data-k=url]').value }
+    : d.querySelector('input').value).filter((v) => typeof v === 'string' ? v.trim() : (v.label.trim() || v.url.trim()));
+}
+const triSelect = (name, val) => `<select name="${name}">
+  ${[['', '未说明'], ['yes', '是'], ['partial', '部分'], ['no', '否']].map(([v, t]) => `<option value="${v}" ${val === v ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
+
+function metaFields(m, { withdrawn = false } = {}) {
+  const v = m.vibe || {};
+  return `
+  <div class="row"><label>标题</label><div><input name="title" value="${esc(m.title)}"><div class="preview" data-prev="title"></div></div></div>
+  <div class="row"><label>作者</label><div><input name="authors" value="${esc((m.authors || [S.site.author]).join(', '))}"><div class="hint">多位作者用英文逗号分隔</div></div></div>
+  <div class="row"><label>摘要</label><div><textarea name="abstract">${esc(m.abstract)}</textarea>
+    <div class="hint">公式写成 $x^2$ 或 $$…$$；空一行分段。下面是预览：</div><div class="preview" data-prev="abstract"></div></div></div>
+  <div class="row"><label>Comments</label><div><input name="comments" value="${esc(m.comments)}"><div class="hint" id="comments-hint">例如 9 pages, 2 figures, 1 table</div></div></div>
+  <div class="row"><label>主学科</label><div><input name="primary_subject" list="subject-list" value="${esc(m.primary_subject)}" placeholder="输入关键字选择 arXiv 分类"></div></div>
+  <div class="row"><label>交叉学科</label><div>${multiRows('subjects', m.subjects, 'subject')}</div></div>
+  <div class="row"><label>关键词</label><div><input name="keywords" value="${esc((m.keywords || []).join(', '))}"><div class="hint">选填，英文逗号分隔</div></div></div>
+  <div class="row"><label>许可证</label><div><input name="license" value="${esc(m.license || S.site.defaultLicense)}"></div></div>
+  <div class="row"><label>链接</label><div>${multiRows('links', m.links, 'link')}<div class="hint">选填，例如代码仓库</div></div></div>
+  <h2>AI 参与（选填，不填就不显示）</h2>
+  <div class="row"><label>AI 工具</label><div><input name="agents" value="${esc((v.agents || []).join(', '))}" placeholder="例如 Claude Code"></div></div>
+  <div class="row"><label>模型</label><div><input name="models" value="${esc((v.models || []).join(', '))}" placeholder="例如 Claude Opus 5.5"></div></div>
+  <div class="row"><label>你的角色</label><div><input name="human_role" value="${esc(v.human_role)}" placeholder="例如 Problem, key ideas, checking of all derivations"></div></div>
+  <div class="row"><label>Checking</label><div class="tri">
+    <label>AI 检查 ${triSelect('machine_verified', v.machine_verified)}</label>
+    <label>本人检查 ${triSelect('human_verified', v.human_verified)}</label>
+    <label>形式化验证 ${triSelect('formal_verified', v.formal_verified)}</label></div></div>
+  <div class="row"><label>材料</label><div>${multiRows('materials', v.materials, 'link')}<div class="hint">代码、数据、对话记录等</div></div></div>
+  <div class="row"><label>AI 备注</label><div><input name="notes" value="${esc(v.notes)}"></div></div>
+  ${withdrawn ? `<h2>撤稿</h2><div class="row"><label>撤稿说明</label><div><input name="withdrawn" value="${esc(m.withdrawn)}"><div class="hint">填了就表示撤稿；论文页面和编号保留</div></div></div>` : ''}`;
+}
+function wirePreviews(root) {
+  root.querySelectorAll('[data-prev]').forEach((p) => {
+    const input = root.querySelector(`[name="${p.dataset.prev}"]`);
+    let t;
+    const upd = () => { p.textContent = input.value; math(p); };
+    input.addEventListener('input', () => { clearTimeout(t); t = setTimeout(upd, 250); });
+    upd();
+  });
+}
+const list = (s) => s.split(',').map((x) => x.trim()).filter(Boolean);
+function readMeta(root) {
+  const val = (n) => root.querySelector(`[name="${n}"]`)?.value ?? '';
+  return {
+    title: val('title'), authors: list(val('authors')), abstract: val('abstract'), comments: val('comments'),
+    primary_subject: val('primary_subject'), subjects: readMulti(root, 'subjects'), keywords: list(val('keywords')),
+    license: val('license'), links: readMulti(root, 'links'), withdrawn: val('withdrawn'),
+    vibe: { agents: list(val('agents')), models: list(val('models')), human_role: val('human_role'),
+      machine_verified: val('machine_verified'), human_verified: val('human_verified'), formal_verified: val('formal_verified'),
+      materials: readMulti(root, 'materials'), notes: val('notes') },
+  };
+}
+
+// PDF 拖放区：上传到本地服务器的临时目录，返回自动提取的信息
+function dropZone(onDone) {
+  const box = document.createElement('div');
+  box.innerHTML = `<div class="drop"><div class="big">把 PDF 拖到这里，或点击选择文件</div><div class="muted">文件会先放在临时目录，保存后才进入 papers/</div><input type="file" accept="application/pdf,.pdf" hidden></div><div class="pdfinfo"></div>`;
+  const drop = box.querySelector('.drop'), input = box.querySelector('input'), info = box.querySelector('.pdfinfo');
+  const handle = async (file) => {
+    if (!file) return;
+    info.innerHTML = `<span class="muted">正在读取 ${esc(file.name)}…</span>`;
+    try {
+      const r = await api('POST', '/api/upload', undefined, file);
+      info.innerHTML = `<div class="msg ok">✓ ${esc(file.name)} · ${r.pages ?? '?'} 页 · ${(r.size / 1024).toFixed(0)} KB<br><span class="muted">SHA-256</span> <code>${r.sha256}</code></div>
+        ${r.duplicateOf.length ? `<div class="msg warn">这个 PDF 和已有的 ${esc(r.duplicateOf.join(', '))} 完全相同。</div>` : ''}`;
+      onDone(r, file);
+    } catch (e) { info.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+  };
+  drop.onclick = () => input.click();
+  input.onchange = () => handle(input.files[0]);
+  drop.ondragover = (e) => { e.preventDefault(); drop.classList.add('over'); };
+  drop.ondragleave = () => drop.classList.remove('over');
+  drop.ondrop = (e) => { e.preventDefault(); drop.classList.remove('over'); handle(e.dataTransfer.files[0]); };
+  return box;
+}
+
+async function submit(btn, msgEl, fn) {
+  btn.disabled = true; msgEl.innerHTML = '';
+  try { await fn(); } catch (e) { msgEl.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; btn.disabled = false; }
+}
+
+// ---------- 新论文 ----------
+function viewNew() {
+  let upload = null;
+  app().innerHTML = `<h1>新论文</h1>
+    <div class="card"><h2 style="margin-top:0">1. PDF（第一版）</h2><div id="dz"></div></div>
+    <form class="card" id="f" autocomplete="off">
+      <h2 style="margin-top:0">2. 发布日期和编号</h2>
+      <div class="row"><label>发布日期</label><div><input type="date" name="date" value="${S.today}" max="${S.today}">
+        <div class="hint">日期按 UTC 计算（编号也按 UTC 的年月）。默认今天，会记录精确时间；补录以前的论文就选当时的日期，页面上只显示日期。</div></div></div>
+      <div class="row"><label>编号</label><div><span class="idbox" id="newid">…</span><div id="idwarn"></div></div></div>
+      <h2>3. 论文信息</h2>
+      ${metaFields({})}
+      <div id="msg"></div>
+      <button class="btn" id="save" type="submit">保存（还不会公开）</button>
+    </form>`;
+  const f = $('#f');
+  wireMulti(f); wirePreviews(f);
+  $('#dz').append(dropZone((r) => {
+    upload = r;
+    const set = (n, v) => { const el = f.querySelector(`[name="${n}"]`); if (v && !el.value.trim()) { el.value = v; el.dispatchEvent(new Event('input')); } };
+    set('title', r.title); set('abstract', r.abstract); set('comments', r.comments);
+    if (r.author && f.querySelector('[name=authors]').value === S.site.author) f.querySelector('[name=authors]').value = r.author;
+  }));
+  const updId = async () => {
+    try { const r = await api('GET', `/api/next-id?date=${f.date.value}`); $('#newid').textContent = `${S.site.name}:${r.id}`;
+      $('#idwarn').innerHTML = r.warning ? `<div class="msg warn">${esc(r.warning)}</div>` : ''; }
+    catch (e) { $('#newid').textContent = '—'; $('#idwarn').innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+  };
+  f.date.onchange = updId; updId();
+  f.onsubmit = (e) => { e.preventDefault(); submit($('#save'), $('#msg'), async () => {
+    if (!upload) throw new Error('请先在上面放入 PDF');
+    const r = await api('POST', '/api/papers', { token: upload.token, date: f.date.value, meta: readMeta(f) });
+    await refresh(); toast(`已保存 ${S.site.name}:${r.id}`); location.hash = '#/';
+  }); };
+}
+
+// ---------- 新版本 ----------
+function viewVersion(id) {
+  const p = S.papers.find((x) => x.id === id);
+  if (!p) return (app().innerHTML = '<div class="msg err">没有这篇论文</div>');
+  const last = p.versions[p.versions.length - 1];
+  const n = p.versions.length + 1;
+  let upload = null;
+  app().innerHTML = `<h1>发新版本：${esc(S.site.name)}:${esc(id)}v${n}</h1>
+    <p class="muted">${esc(p.meta.title)} · 当前最新 v${last.v}（${esc(String(last.date).slice(0, 10))}）。已发布的 PDF 不会被替换。</p>
+    <div class="card"><h2 style="margin-top:0">1. 新 PDF</h2><div id="dz"></div></div>
+    <form class="card" id="f" autocomplete="off">
+      <h2 style="margin-top:0">2. 版本信息</h2>
+      <div class="row"><label>发布日期</label><div><input type="date" name="date" value="${S.today}" max="${S.today}"><div class="hint">按 UTC 计算，必须晚于 v${last.v}</div></div></div>
+      <div class="row"><label>修改说明</label><div><input name="note" placeholder="例如 Added Section 4 and fixed a sign error in (3.2)"><div class="hint">选填，显示在版本历史里</div></div></div>
+      <details id="metabox"><summary>同时修改论文信息（标题、摘要、Comments 等以最新版本为准）</summary>${metaFields(p.meta, { withdrawn: true })}</details>
+      <div id="msg"></div>
+      <button class="btn" id="save" type="submit">保存 v${n}（还不会公开）</button>
+    </form>`;
+  const f = $('#f');
+  wireMulti(f); wirePreviews(f);
+  $('#dz').append(dropZone((r) => {
+    upload = r;
+    if (r.comments && r.comments !== f.comments.value) {
+      $('#comments-hint').innerHTML = `新 PDF 读出来是 <b>${esc(r.comments)}</b> · <button type="button" class="link" id="usec">用这个</button>`;
+      $('#usec').onclick = () => { f.comments.value = r.comments; $('#metabox').open = true; };
+    }
+  }));
+  f.onsubmit = (e) => { e.preventDefault(); submit($('#save'), $('#msg'), async () => {
+    if (!upload) throw new Error('请先在上面放入新 PDF');
+    const r = await api('POST', `/api/paper/version?id=${id}`, { token: upload.token, date: f.date.value, note: f.note.value, meta: readMeta(f) });
+    await refresh(); toast(`已保存 ${S.site.name}:${id}v${r.v}`); location.hash = '#/';
+  }); };
+}
+
+// ---------- 修改信息 ----------
+function viewEdit(id) {
+  const p = S.papers.find((x) => x.id === id);
+  if (!p) return (app().innerHTML = '<div class="msg err">没有这篇论文</div>');
+  app().innerHTML = `<h1>修改信息：${esc(S.site.name)}:${esc(id)}</h1>
+    <p class="muted">只改文字信息，PDF 和版本历史不变。要换 PDF 请 <a href="#/version/${id}">发新版本</a>。</p>
+    <form class="card" id="f" autocomplete="off">${metaFields(p.meta, { withdrawn: true })}
+      <div id="msg"></div><button class="btn" id="save" type="submit">保存（还不会公开）</button></form>`;
+  const f = $('#f');
+  wireMulti(f); wirePreviews(f);
+  f.onsubmit = (e) => { e.preventDefault(); submit($('#save'), $('#msg'), async () => {
+    await api('PUT', `/api/paper?id=${id}`, { meta: readMeta(f) });
+    await refresh(); toast('已保存'); location.hash = '#/';
+  }); };
+}
+
+// ---------- 发布 ----------
+function viewPublish() {
+  const label = { '??': '新增', A: '新增', M: '修改', D: '删除' };
+  app().innerHTML = `<h1>发布</h1>
+    ${S.changes.length ? `<div class="card"><h2 style="margin-top:0">将要发布的改动</h2>
+      <ul>${S.changes.map((c) => `<li>${label[c.code] || c.code} <code>${esc(c.file)}</code></li>`).join('')}</ul>
+      <p class="muted">发布会依次：构建并检查全站（格式、学科、哈希、日期）→ git commit → git push。构建失败就不会提交。只提交 papers/ 里的改动。</p>
+      <button class="btn" id="go">发布</button> <a href="${siteUrl('/')}" target="_blank" rel="noopener" style="margin-left:12px">先预览网站 ↗</a></div>`
+      : '<div class="card">没有需要发布的改动。</div>'}
+    <div id="out"></div>`;
+  const go = $('#go');
+  if (go) go.onclick = async () => {
+    if (!confirm('确定发布？仓库是公开的，推送后任何人都能看到。')) return;
+    go.disabled = true; go.textContent = '发布中…';
+    try {
+      const r = await api('POST', '/api/publish');
+      $('#out').innerHTML = `<div class="msg ${r.ok ? 'ok' : 'err'}">${r.ok ? '已发布并推送到 GitHub。' : '没有完成，详情见下面的记录。'}</div><pre class="log">${esc(r.log)}</pre>`;
+    } catch (e) { $('#out').innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+    await refresh(); go.remove();
+  };
+}
+
+// ---------- 路由 ----------
+async function route() {
+  try { await refresh(); } catch (e) { app().innerHTML = `<div class="msg err">连不上后台服务：${esc(e.message)}。请在终端运行 npm run admin。</div>`; return; }
+  const [, view, id] = location.hash.replace(/^#/, '').split('/');
+  document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('on', a.dataset.nav === (view || 'list')));
+  if (view === 'new') viewNew();
+  else if (view === 'version') viewVersion(id);
+  else if (view === 'edit') viewEdit(id);
+  else if (view === 'publish') viewPublish();
+  else viewList();
+  window.scrollTo(0, 0);
+}
+window.addEventListener('hashchange', route);
+window.addEventListener('load', route);
+</script>
+</body>
+</html>

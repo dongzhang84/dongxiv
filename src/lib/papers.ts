@@ -5,9 +5,16 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import YAML from 'yaml';
 import { z } from 'astro/zod';
+import ARXIV_SUBJECTS from './arxiv-subjects.json';
 
 export const PAPERS_DIR = path.resolve('papers');
 export const ID_RE = /^\d{4}\.\d{4}$/;
+
+// 学科名只能用 arXiv 分类表里的名字（src/lib/arxiv-subjects.json，取自 arxiv.org/category_taxonomy）
+const SUBJECTS = new Set(ARXIV_SUBJECTS.map((s) => s.name));
+const Subject = z.string().refine((s) => SUBJECTS.has(s), {
+  error: (iss) => `"${iss.input}" 不是 arXiv 的分类名（见 src/lib/arxiv-subjects.json）`,
+});
 
 const Tri = z.enum(['yes', 'no', 'partial']).optional();
 const Link = z.object({ label: z.string().min(1), url: z.url() }).strict();
@@ -28,8 +35,8 @@ const Meta = z
     authors: z.array(z.string().min(1)).min(1),
     abstract: z.string().min(1),
     comments: z.string().optional(),
-    primary_subject: z.string().min(1),
-    subjects: z.array(z.string()).default([]),
+    primary_subject: Subject,
+    subjects: z.array(Subject).default([]),
     keywords: z.array(z.string()).default([]),
     license: z.string().optional(),
     links: z.array(Link).default([]),
@@ -52,7 +59,7 @@ const Meta = z
   .strict();
 
 export type Tri = z.infer<typeof Tri>;
-export type PaperVersion = z.infer<typeof Version> & { v: number; pdfPath: string };
+export type PaperVersion = z.infer<typeof Version> & { v: number; pdfPath: string; dateOnly: boolean };
 export type Paper = Omit<z.infer<typeof Meta>, 'versions'> & {
   id: string;
   versions: PaperVersion[];
@@ -85,7 +92,9 @@ function loadOne(id: string): Paper {
     if (actual !== v.sha256)
       throw new Error(`papers/${id}/${v.file} 的 SHA-256 与记录不一致（已发布的 PDF 不能替换，请发新版本）。\n  记录：${v.sha256}\n  实际：${actual}`);
     if (i > 0 && v.date <= meta.versions[i - 1].date) throw new Error(`${where}: v${n} 的日期必须晚于 v${n - 1}`);
-    return { ...v, v: n, pdfPath };
+    // 只写了日期（如 2026-09-14）的版本，页面上只显示日期，不显示时刻
+    const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(String(raw.versions?.[i]?.date ?? ''));
+    return { ...v, v: n, pdfPath, dateOnly };
   });
 
   const first = versions[0].date;

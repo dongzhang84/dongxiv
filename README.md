@@ -15,6 +15,23 @@ npm run build    # 生成静态网站到 dist/
 
 需要 Node 22 以上。
 
+## 发布论文（后台）
+
+```sh
+npm run admin    # 打开 http://localhost:4322 ，同时在 http://localhost:4321 启动网站预览
+```
+
+在网页上：
+
+1. **+ 新论文**：拖入 PDF（自动读出页数、SHA-256，并预填标题、摘要、Comments），选日期，填信息，保存。编号按日期自动分配。
+2. **发新版本**：给已有论文拖入新 PDF，写修改说明。已发布的 PDF 不能替换。
+3. **修改信息**：只改文字信息；也可以在这里标记撤稿。
+4. **预览**：看和线上一样的页面。
+5. **发布**：构建检查 → `git commit`（只提交 `papers/`）→ `git push`。构建失败不会提交。
+
+保存后、发布前，改动只在本地。未发布的论文和版本可以在后台删除，已发布的不能删除。
+后台只监听本机，不会部署到线上。
+
 ## 目录
 
 ```
@@ -25,8 +42,8 @@ site.config.mjs       站点配置（名字、作者、域名、是否允许收�
 src/lib/papers.ts     读取并校验所有论文；格式错误或哈希不一致时构建失败
 src/pages/            页面：首页列表、/abs/<id>/、/pdf/<id>.pdf、about、search、feed.xml、sitemap.xml
 src/styles/global.css 样式
+admin/                发布后台（server.mjs + index.html）
 ```
 
-字段说明见 [docs/proposal.md](docs/proposal.md) §5.2。发布后台（拖入 PDF、填表、一键发布）是下一阶段。
-
-`papers/` 里现有的三篇都是示例（demo），正式上线前删除。
+字段说明见 [docs/proposal.md](docs/proposal.md) §5.2。学科名必须是 arXiv 分类表里的名字（`src/lib/arxiv-subjects.json`）。
+`pdfs/` 是本地放原始 PDF 的地方，不进仓库。
