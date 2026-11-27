@@ -3,10 +3,11 @@ import Base from '../layouts/Base.astro';
 import Listing from '../components/Listing.astro';
 import site from '../../site.config.mjs';
 import { getPapers } from '../lib/papers';
-import { inline, subjectsOf, subjectUrl } from '../lib/format';
+import { inline, subjectsOf, subjectUrl, absUrl, pid, fmtShort } from '../lib/format';
 
 const papers = getPapers();
 const subjects = subjectsOf(papers);
+const recent = papers.slice(0, 3);
 ---
 <Base math>
   <p class="home-intro" set:html={`${inline(site.intro)} Materials on this site are not peer-reviewed.`} />
@@ -16,5 +17,19 @@ const subjects = subjectsOf(papers);
       {subjects.map((s, i) => (<>{i > 0 && ' · '}<a href={subjectUrl(s.name)}>{s.name}</a> <span class="count">({s.total})</span></>))}
     </p>
   )}
+  {recent.length > 0 && (
+    <section class="latest">
+      <h2>Most recent</h2>
+      <ul class="latest-list">
+        {recent.map((p) => (
+          <li>
+            <a href={absUrl(p.id)}>{pid(p.id)}</a> <span class="latest-title">{p.title}</span>
+            <span class="latest-meta">{p.authors.join(', ')} · {fmtShort(p.first)}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+  <h2 class="all-heading">All papers</h2>
   <Listing papers={papers} />
 </Base>
