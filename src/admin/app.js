@@ -122,7 +122,7 @@ function viewList() {
         <a href="/abs/${esc(p.id)}/" target="_blank" rel="noopener">View</a>
         <a href="#/version/${esc(p.id)}">New version</a>
         <a href="#/edit/${esc(p.id)}">Edit info</a>
-        ${p.meta.withdrawn ? `<a href="#/withdraw/${esc(p.id)}">Restore</a>` : `<a class="danger" href="#/withdraw/${esc(p.id)}">Withdraw</a>`}
+        ${p.meta.withdrawn ? `<a href="#/withdraw/${esc(p.id)}">Restore</a>` : `<a href="#/withdraw/${esc(p.id)}">Withdraw</a>`}
       </td></tr>`;
   }).join('');
   app().innerHTML = `
@@ -381,7 +381,7 @@ function viewWithdraw(id) {
     <form class="card" id="f" autocomplete="off"><p class="t-title">${esc(p.meta.title)}</p>
       <p class="muted">The paper disappears from the listings, the feed and search engines. Its abstract page stays reachable by direct link and shows the note below, so existing links and citations still work. The identifier is never reused. You can restore it later.</p>
       <div class="row"><label>Withdrawal note</label><div><input name="note" placeholder="e.g. The proof of Theorem 3 contains an error."><div class="hint">Required; shown on the abstract page</div></div></div>
-      <div id="msg"></div><button class="btn danger" id="save" type="submit">Withdraw paper</button></form>`;
+      <div id="msg"></div><button class="btn" id="save" type="submit">Withdraw paper</button></form>`;
   const go = () => submit($('#save'), $('#msg'), async () => {
     const note = restoring ? '' : $('#f').note.value.trim();
     if (!restoring && !note) throw new Error('Write a short withdrawal note first');
