@@ -41,8 +41,8 @@ main { padding: 0 20px 40px; min-height: 60vh; }
 .page-heading { font-size: 26px; font-weight: 600; margin: 18px 0 10px; }
 
 /* ---------- 首页 ---------- */
-.home-intro { max-width: 720px; margin: 18px 0 8px; }
-.home-subjects { font-size: 14px; margin: 0 0 4px; max-width: 900px; }
+.home-intro { margin: 18px 0 8px; }
+.home-subjects { font-size: 14px; margin: 0 0 4px; }
 .home-subjects .count { color: var(--muted); }
 .latest h2, .all-heading { font-size: 21px; font-weight: 600; margin: 22px 0 8px; }
 .latest-list { margin: 0; padding-left: 40px; }
