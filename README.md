@@ -2,8 +2,23 @@
 
 A personal arXiv-style archive for my vibe research papers. Built with [Astro](https://astro.build), deployed on Vercel as a static site (plus a small GitHub login function for the online admin).
 
+- Live: <https://dongxiv.org>
 - Plan: [docs/proposal.md](docs/proposal.md)
 - Changes: [CHANGELOG.md](CHANGELOG.md)
+- Online admin setup: [docs/online-admin.md](docs/online-admin.md)
+
+## 现状（2026-11-27）
+
+已上线，共 5 篇论文。主要功能：
+
+- **编号和版本**：永久编号 `dongxiv:YYMM.NNNN`，版本 `vN`；已发布的 PDF 不能替换，每次构建都会核对 SHA-256。
+- **页面**：首页（按学科浏览、Most recent、按日期分组的全部论文）、学科页、摘要页和各版本页、About、Atom 订阅（页脚）、sitemap、404。
+- **元数据**：Comments、Subjects（arXiv 分类）、Formal proof（如 Lean 4 + Mathlib，链接到源码）、AI 参与情况和验证状态、BibTeX、Google Scholar 标签。
+- **撤稿**：从列表、订阅和 sitemap 中撤下，摘要页保留并显示撤稿说明。
+- **发布**：在线后台和本地后台，两者都能上传 PDF、发新版本、改信息、撤稿和恢复。
+- **域名**：dongxiv.org，www 和 dongxiv.vercel.app 都跳转到这里。
+
+暂不做的事见 [docs/proposal.md](docs/proposal.md) §12：OpenTimestamps、Internet Archive 快照、Zenodo DOI、更醒目的 Formal proof 样式、同步到 aiXiv。
 
 ## 本地运行
 

@@ -2,6 +2,15 @@
 
 ## 2026-11-27
 
+- **第一阶段收尾**：网站在 https://dongxiv.org 上线，共 5 篇论文（2606.0001、2609.0001、2610.0001、2610.0002、2611.0001）。剩下的增强功能先不做，见 `docs/proposal.md` §12。
+- **线上内测通过**（没有新增论文）：
+  - 站内 38 个地址都能打开，不存在的地址正确返回 404。
+  - 5 篇 PDF 的 SHA-256 和 meta.yaml 一致。
+  - www、dongxiv.vercel.app 和 http 都 308 跳转到 https://dongxiv.org。
+  - canonical、Scholar 标签和 BibTeX 用的都是新域名；Atom 和 sitemap 是合法的 XML。
+  - 手机宽度下没有横向溢出，公式全部渲染成功，控制台没有报错。
+- **顶栏去掉 Feed**：在浏览器里直接打开订阅源只会看到原始 XML，访客容易误以为网站出错。页脚的 "Atom feed" 链接和页面头部的自动发现标签保留，阅读器照样能订阅。
+- **文档更新**：README 加上现状和功能概览；计划书更新状态、决策表、页面表和待讨论清单。
 - **启用域名 dongxiv.org**（Namecheap 注册，DNS 指向 Vercel；www.dongxiv.org 308 跳转到 dongxiv.org）。`baseUrl` 改为 `https://dongxiv.org`：canonical、sitemap、robots.txt、Atom、BibTeX、Google Scholar 标签和 "Cite as" 网址随之更新。GitHub App 的 Homepage 和回调地址也已改为新域名。
 - **首页简介和按学科浏览取消最大宽度**，和 arXiv 一样铺满页面宽度，两段在同一处换行。
 - **首页简介精简为一句**：去掉 SHA-256 和 "not peer-reviewed" 两句（页脚和 About 页仍保留免责说明）。

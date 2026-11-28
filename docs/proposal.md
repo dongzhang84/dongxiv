@@ -1,6 +1,6 @@
 # dongxiv 建站计划（Proposal）
 
-> 状态：阶段 1 已完成（本地原型） · 最后更新：2026-11-26
+> 状态：阶段 0–3 已完成，网站已上线 <https://dongxiv.org>（5 篇论文）；阶段 4、5 暂不做 · 最后更新：2026-11-27
 > 标记说明：✅ 已确定 · ❓ 待定（需要讨论）
 
 ---
@@ -42,11 +42,13 @@
 | 部署 | Vercel，`git push` 后自动部署 | ✅ |
 | 发布方式 | 在线后台 `/admin/`（GitHub 登录）+ 本地后台 `npm run admin` | ✅ |
 | UI | 页面结构对标 arXiv；颜色、logo 和文案自己设计 | ✅ |
-| 搜索引擎 / Google Scholar 收录 | 暂时开启（`site.config.mjs` 的 `indexable` 一个开关） | ❓ 上线前再确认 |
-| 域名 | — | ❓ 待定 |
+| 搜索引擎 / Google Scholar 收录 | 开启（`site.config.mjs` 的 `indexable` 一个开关；摘要页带 Scholar 标签） | ✅ |
+| 域名 | `dongxiv.org`（Namecheap 注册，DNS 指向 Vercel；www 和 dongxiv.vercel.app 都 308 跳转过来） | ✅ |
 | 技术栈 | Astro（见 §10） | ✅ |
 | 主色 | 深蓝 `#26456e` | ✅ |
 | Vibe research 字段 | 四类全部预留（分工、工具和模型、验证状态、材料），没填的不显示（见 §5.2） | ✅（细节可再调） |
+| 形式化证明 | `formal` 字段，摘要页和列表里显示 "Formal proof" 一行（见 §5.2） | ✅ |
+| 撤稿 | 从列表、订阅、sitemap 撤下，摘要页保留并显示撤稿说明 | ✅ |
 
 ---
 
@@ -71,12 +73,12 @@
      搜索索引、RSS、sitemap）
               │
               ▼
-     https://<域名>/  （CDN 分发）
+     https://dongxiv.org/  （CDN 分发）
 ```
 
 - **唯一的真实数据**：仓库中的 `papers/` 目录，网站上的所有页面都由它生成。
-- **没有服务器端代码，也没有数据库**：线上只有静态文件，安全，零运维。
-- **管理后台只在本机运行**：不对外暴露，所以不需要做登录和权限。
+- **没有数据库，几乎没有服务器端代码**：页面全部静态生成；线上只有 `/api/auth/*` 两个 GitHub 登录接口在服务器上运行（给在线后台用）。
+- **两个后台**：本地后台只在本机运行；在线后台 `/admin/` 用 GitHub App 登录，只限仓库主人，浏览器直接通过 GitHub API 提交（见 §8）。
 
 ---
 
@@ -167,12 +169,12 @@ versions:                     # 由后台自动生成，不要手改
 
 | 页面 | 内容 | 参照 |
 |---|---|---|
-| 首页 / 列表页 | 站点简介；顶部"共 N 篇"和按月跳转链接；按日期分组，每条显示 `[1] dongxiv:2612.0001 [abs, pdf]`、标题、作者、备注、学科 | arXiv listing、liuxiv |
+| 首页 | 站点简介；按学科浏览；Most recent（最新 3 篇）；全部论文按首次发布日分组，每条显示 `[1] dongxiv:2612.0001 [abs, pdf]`、标题、作者、Comments、Formal proof、学科 | arXiv 首页和 listing |
+| 学科页 `/list/<学科>/` | 该学科的论文列表 | arXiv listing |
 | 摘要页 `/abs/<id>/` | 左栏：发布和修订时间、标题、作者、摘要、AI 参与说明、元数据表（Comments、Subjects、Cite as）、版本历史（时间、页数、SHA-256）。右栏：PDF 下载、BibTeX 一键复制、上一篇/下一篇 | arXiv abs 页 |
 | 版本页 `/abs/<id>vN/` | 同摘要页，PDF 链接指向该版本 | arXiv |
 | 关于页 | 编号规则、vibe research 声明、验证标记的含义、如何核对哈希 | liuxiv 页面顶部的说明 |
-| 搜索页 | 按标题、作者、摘要、编号搜索，在浏览器里完成，不需要服务器 | — |
-| RSS/Atom 订阅 | 新论文和新版本 | arXiv RSS |
+| Atom 订阅 `/feed.xml` | 新论文（链接在页脚，页面头部有自动发现标签） | arXiv RSS |
 | sitemap / robots.txt | 按"是否允许收录"的配置生成 | — |
 | 404 页 | — | — |
 
@@ -180,7 +182,7 @@ versions:                     # 由后台自动生成，不要手改
 
 - 数学公式渲染（KaTeX）
 - 手机端适配
-- 深色模式（可选）
+- 不做深色模式（2026-11-25 决定，跟 arXiv 一致）
 
 ---
 
@@ -249,7 +251,7 @@ versions:                     # 由后台自动生成，不要手改
 
 ## 11. Google Scholar 收录 ❓
 
-**是否开放收录**：待定，在 `site.toml` 里用一个开关控制。
+**是否开放收录**：已开放，由 `site.config.mjs` 的 `indexable` 一个开关控制。
 
 **如果开放，需要满足**
 
@@ -267,10 +269,10 @@ Scholar 没有申请入口，只能等爬虫来抓，一般要几周到几个月
 | 阶段 | 内容 | 产出 |
 |---|---|---|
 | **0. 定方案** ✅ | 定下名字、技术栈、主色、字段；域名和收录上线前再定 | 本文档 |
-| **1. 静态网站原型** ✅ | 列表页、摘要页、版本页、About、搜索、Atom、sitemap、Scholar 标签；三篇示例论文 | 本地可浏览的网站 |
+| **1. 静态网站原型** ✅ | 列表页、摘要页、版本页、About、Atom、sitemap、Scholar 标签；三篇示例论文（上线前已删除；搜索后来去掉了） | 本地可浏览的网站 |
 | **2. 发布后台** ✅ | 发布新论文和新版本、修改元数据、预览、一键发布（`npm run admin`） | 本地 UI |
-| **3. 上线** | 公开仓库 + Vercel ✅ + 域名 dongxiv.org ✅（2026-11-27，Namecheap）+ 在线后台 ✅；Scholar 收录待定 | 线上网站 |
-| **4. 增强（可选）** | OpenTimestamps、Internet Archive 自动快照、Zenodo、学科浏览页 | — |
+| **3. 上线** ✅ | 公开仓库 + Vercel + 域名 dongxiv.org（2026-11-27，Namecheap）+ 在线后台 + 撤稿 + Formal proof；2026-11-27 线上内测通过 | https://dongxiv.org |
+| **4. 增强（可选，暂不做）** | OpenTimestamps、Internet Archive 自动快照、Zenodo；Formal proof 更醒目的样式；同步到 aiXiv | — |
 | **5. 以后再说** | PDF 迁到 Vercel Blob、公开 TeX、HTML 版全文 | — |
 
 ---
@@ -292,10 +294,10 @@ Scholar 没有申请入口，只能等爬虫来抓，一般要几周到几个月
 ## 14. 待讨论清单
 
 1. [x] 名字定为 `dongxiv`
-2. [ ] 域名：买什么、什么时候买？
-3. [ ] 发布方式：本地管理后台可以吗？
+2. [x] 域名：dongxiv.org（2026-11-27）
+3. [x] 发布方式：在线后台 + 本地后台
 4. [x] vibe research 字段：四类全部预留（§5.2）
 5. [x] 技术栈：Astro（§10）
-6. [ ] 是否开放搜索引擎和 Scholar 收录（§11）
+6. [x] 开放搜索引擎和 Scholar 收录（§11）
 7. [x] 主色：深蓝 `#26456e`
 8. [ ] 第 4 阶段的增强功能里，哪些要做
